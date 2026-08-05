@@ -15,14 +15,36 @@ html,body{height:100%;}
 body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--light);color:var(--dark);overflow:hidden;}
 
 /* ===== APP LAYOUT ===== */
-.app{display:flex;height:100vh;}
+.app{display:flex;height:100vh;position:relative;}
 
-/* ===== SIDEBAR ===== */
+/* ===== SIDEBAR (FLOATING + AUTO-HIDE) ===== */
 .sidebar{
-  width:300px;min-width:300px;background:#fff;
+  position:fixed;top:0;left:0;height:100vh;
+  width:300px;min-width:300px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
   border-right:1px solid #e6e9f0;display:flex;flex-direction:column;
-  box-shadow:2px 0 14px rgba(0,0,0,.05);z-index:10;
+  box-shadow:3px 0 24px rgba(0,0,0,.14);z-index:120;
+  transform:translateX(0);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
 }
+.sidebar.hidden{transform:translateX(-100%);}
+/* zona pemicu di tepi kiri untuk memunculkan menu lagi */
+.edge-trigger{position:fixed;top:0;left:0;width:14px;height:100vh;z-index:115;}
+/* tab kecil penanda "tarik menu" saat sidebar tersembunyi */
+.edge-handle{
+  position:fixed;top:50%;left:0;transform:translateY(-50%);
+  width:26px;height:70px;background:var(--blue);color:#fff;
+  border-radius:0 12px 12px 0;display:flex;align-items:center;justify-content:center;
+  font-size:1.1em;cursor:pointer;z-index:116;box-shadow:2px 2px 10px rgba(0,0,0,.2);
+  opacity:0;pointer-events:none;transition:opacity .3s ease;
+}
+.edge-handle.show{opacity:.85;pointer-events:auto;}
+.edge-handle:hover{opacity:1;}
+/* tombol pin untuk mengunci menu tetap terbuka */
+.pin-btn{position:absolute;top:14px;right:12px;width:30px;height:30px;border:none;border-radius:8px;
+  background:rgba(255,255,255,.25);color:#fff;cursor:pointer;font-size:.95em;display:flex;align-items:center;justify-content:center;transition:var(--transition);z-index:5;}
+.pin-btn:hover{background:rgba(255,255,255,.4);}
+.pin-btn.pinned{background:#FFD700;color:var(--dark);}
 .sb-head{
   background:linear-gradient(135deg,var(--blue) 0%,#004a80 60%,var(--dark) 100%);
   color:#fff;padding:20px 18px;
@@ -71,7 +93,7 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--li
 .sb-empty{text-align:center;color:var(--grey);padding:40px 16px;font-size:.85em;}
 
 /* ===== MAIN PREVIEW ===== */
-.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;width:100%;}
 .preview-bar{
   background:#fff;border-bottom:1px solid #e6e9f0;padding:12px 20px;
   display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);
@@ -114,11 +136,9 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--li
 .modal-btns .btn{flex:1;padding:12px;font-size:.92em;}
 
 @media(max-width:820px){
-  body{overflow:auto;}
-  .app{flex-direction:column;height:auto;}
-  .sidebar{width:100%;min-width:0;height:auto;}
-  .sb-list{max-height:340px;}
-  .main{min-height:70vh;}
+  .sidebar{width:85%;max-width:320px;}
+  .main{min-height:100vh;}
+  .edge-handle{width:32px;height:80px;opacity:.9;}
 }
 </style>
 </head>
@@ -126,14 +146,19 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--li
 
 <div class="app">
 
+  <!-- zona pemicu tepi kiri + handle -->
+  <div class="edge-trigger" onmouseenter="showSidebar()"></div>
+  <div class="edge-handle" id="edgeHandle" onclick="showSidebar()" title="Buka menu">☰</div>
+
   <!-- ===== SIDEBAR ===== -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar" onmouseleave="onSidebarLeave()">
     <div class="sb-head">
+      <button class="pin-btn" id="pinBtn" onclick="togglePin()" title="Kunci menu tetap terbuka">📌</button>
       <div class="top">
         <div class="logo">🖥️</div>
         <div>
           <h1>Monitoring Hub</h1>
-          <p>Pusat Kendali Dashboard-Muhammad Nizar</p>
+          <p>Pusat Kendali Dashboard</p>
         </div>
       </div>
       <div class="sb-stats">
@@ -292,6 +317,7 @@ function selectDash(id){
   document.getElementById('pvName').textContent=c.name;
   document.getElementById('pvUrl').textContent=c.url;
   renderList();
+  hideSidebar(); // auto-hide setelah pilih dashboard (kecuali di-pin)
 }
 function reloadPreview(){
   let c=cards.find(x=>x.id===activeId); if(!c) return;
@@ -399,6 +425,40 @@ function importConfig(input){
 // close modal on outside click / Esc
 document.getElementById('modalBg').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
+
+// ============ SIDEBAR AUTO-HIDE ============
+let sidebarPinned = false;
+let hideTimer = null;
+
+function showSidebar(){
+  clearTimeout(hideTimer);
+  document.getElementById('sidebar').classList.remove('hidden');
+  document.getElementById('edgeHandle').classList.remove('show');
+}
+function hideSidebar(){
+  if(sidebarPinned) return;            // kalau di-pin, jangan sembunyi
+  document.getElementById('sidebar').classList.add('hidden');
+  document.getElementById('edgeHandle').classList.add('show');
+}
+function onSidebarLeave(){
+  // sembunyikan otomatis saat kursor keluar dari menu (kalau tidak di-pin & sudah ada preview aktif)
+  if(sidebarPinned || !activeId) return;
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(hideSidebar, 350);
+}
+function togglePin(){
+  sidebarPinned = !sidebarPinned;
+  var b=document.getElementById('pinBtn');
+  b.classList.toggle('pinned', sidebarPinned);
+  b.title = sidebarPinned ? 'Menu terkunci — klik untuk lepas' : 'Kunci menu tetap terbuka';
+  if(sidebarPinned){ showSidebar(); }
+  localStorage.setItem('hub_pinned', sidebarPinned ? '1':'0');
+}
+// restore status pin
+if(localStorage.getItem('hub_pinned')==='1'){
+  sidebarPinned=true;
+  document.getElementById('pinBtn').classList.add('pinned');
+}
 
 // ============ INIT ============
 renderList();
