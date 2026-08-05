@@ -11,137 +11,177 @@
   --transition:all .2s ease;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--light);color:var(--dark);min-height:100vh;}
+html,body{height:100%;}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--light);color:var(--dark);overflow:hidden;}
 
-/* ===== HEADER ===== */
-.header{
-  background:linear-gradient(135deg,var(--blue) 0%,#004a80 55%,var(--dark) 100%);
-  color:#fff;padding:26px 40px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-  box-shadow:0 4px 24px rgba(0,102,177,.3);
+/* ===== APP LAYOUT ===== */
+.app{display:flex;height:100vh;}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:300px;min-width:300px;background:#fff;
+  border-right:1px solid #e6e9f0;display:flex;flex-direction:column;
+  box-shadow:2px 0 14px rgba(0,0,0,.05);z-index:10;
 }
-.header .logo{width:56px;height:56px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.9em;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.2);}
-.header .htext h1{font-size:1.55em;font-weight:800;letter-spacing:.5px;}
-.header .htext p{font-size:.92em;opacity:.85;margin-top:2px;}
-.header .hspace{flex:1;}
-.header .hstat{text-align:center;padding:0 16px;}
-.header .hstat .num{font-size:1.9em;font-weight:800;line-height:1;}
-.header .hstat .lbl{font-size:.72em;opacity:.8;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.sb-head{
+  background:linear-gradient(135deg,var(--blue) 0%,#004a80 60%,var(--dark) 100%);
+  color:#fff;padding:20px 18px;
+}
+.sb-head .top{display:flex;align-items:center;gap:11px;}
+.sb-head .logo{width:44px;height:44px;background:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.5em;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.sb-head h1{font-size:1.15em;font-weight:800;line-height:1.1;}
+.sb-head p{font-size:.75em;opacity:.85;margin-top:2px;}
+.sb-stats{display:flex;gap:8px;margin-top:14px;}
+.sb-stats .st{flex:1;background:rgba(255,255,255,.14);border-radius:9px;padding:8px 6px;text-align:center;}
+.sb-stats .st .n{font-size:1.3em;font-weight:800;line-height:1;}
+.sb-stats .st .l{font-size:.62em;opacity:.85;text-transform:uppercase;letter-spacing:.5px;margin-top:3px;}
 
-/* ===== TOOLBAR ===== */
-.toolbar{max-width:1280px;margin:26px auto 0;padding:0 28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
-.search{flex:1;min-width:220px;position:relative;}
-.search input{width:100%;padding:13px 16px 13px 44px;border:2px solid #e2e6ee;border-radius:12px;font-size:1em;background:#fff;transition:var(--transition);}
-.search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,102,177,.12);}
-.search .ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:1.1em;opacity:.5;}
-.btn{padding:13px 20px;border:none;border-radius:12px;font-size:.95em;font-weight:700;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:7px;}
-.btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.15);}
+.sb-tools{padding:12px 14px;border-bottom:1px solid #eef1f6;}
+.sb-search{position:relative;margin-bottom:10px;}
+.sb-search input{width:100%;padding:10px 12px 10px 36px;border:2px solid #e2e6ee;border-radius:10px;font-size:.9em;transition:var(--transition);}
+.sb-search input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,102,177,.1);}
+.sb-search .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5;}
+.sb-btns{display:flex;gap:7px;}
+.btn{padding:9px 12px;border:none;border-radius:9px;font-size:.82em;font-weight:700;cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;justify-content:center;gap:5px;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.13);}
 .btn-blue{background:var(--blue);color:#fff;}
 .btn-red{background:var(--red);color:#fff;}
 .btn-outline{background:#fff;color:var(--dark);border:2px solid #e2e6ee;}
-.btn-sm{padding:7px 12px;font-size:.82em;border-radius:8px;}
+.sb-btns .btn{flex:1;}
 
-/* ===== CATEGORY CHIPS ===== */
-.cats{max-width:1280px;margin:16px auto 0;padding:0 28px;display:flex;gap:8px;flex-wrap:wrap;}
-.chip{padding:7px 16px;border-radius:20px;background:#fff;border:2px solid #e2e6ee;font-size:.85em;font-weight:600;cursor:pointer;transition:var(--transition);color:var(--grey);}
-.chip:hover{border-color:var(--blue);color:var(--blue);}
-.chip.active{background:var(--blue);color:#fff;border-color:var(--blue);}
-
-/* ===== GRID ===== */
-.grid{max-width:1280px;margin:22px auto 40px;padding:0 28px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
-.card{
-  background:#fff;border-radius:16px;padding:22px;box-shadow:0 3px 14px rgba(0,0,0,.06);
-  border:1px solid #eef1f6;transition:var(--transition);position:relative;overflow:hidden;
-  display:flex;flex-direction:column;cursor:pointer;
+/* nav list */
+.sb-list{flex:1;overflow-y:auto;padding:10px 10px 20px;}
+.cat-group{margin-bottom:6px;}
+.cat-label{font-size:.68em;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--grey);padding:12px 10px 6px;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:11px;cursor:pointer;
+  transition:var(--transition);border-left:4px solid transparent;margin-bottom:3px;position:relative;
 }
-.card::before{content:'';position:absolute;top:0;left:0;width:100%;height:5px;background:var(--accent,var(--blue));}
-.card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(0,0,0,.13);border-color:var(--accent,var(--blue));}
-.card .c-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px;}
-.card .c-icon{width:52px;height:52px;border-radius:13px;background:var(--accent-soft,#e6f0fa);display:flex;align-items:center;justify-content:center;font-size:1.7em;flex-shrink:0;}
-.card .c-title{font-size:1.18em;font-weight:800;line-height:1.25;color:var(--dark);}
-.card .c-cat{display:inline-block;margin-top:5px;font-size:.72em;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--accent,var(--blue));background:var(--accent-soft,#e6f0fa);padding:3px 10px;border-radius:20px;}
-.card .c-desc{font-size:.92em;color:var(--grey);line-height:1.55;flex:1;margin-bottom:16px;}
-.card .c-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #f0f2f7;padding-top:13px;}
-.card .c-open{font-size:.9em;font-weight:700;color:var(--accent,var(--blue));display:inline-flex;align-items:center;gap:5px;}
-.card .c-actions{display:flex;gap:6px;opacity:0;transition:var(--transition);}
-.card:hover .c-actions{opacity:1;}
-.icon-btn{width:30px;height:30px;border:none;border-radius:8px;cursor:pointer;font-size:.9em;display:flex;align-items:center;justify-content:center;background:#f1f3f8;transition:var(--transition);}
-.icon-btn:hover{background:#e0e4ee;}
-.icon-btn.del:hover{background:#fde0e0;}
+.nav-item:hover{background:#f2f5fb;}
+.nav-item.active{background:var(--accent-soft,#e6f0fa);border-left-color:var(--accent,var(--blue));}
+.nav-item .ni-icon{width:38px;height:38px;border-radius:10px;background:var(--accent-soft,#e6f0fa);display:flex;align-items:center;justify-content:center;font-size:1.3em;flex-shrink:0;}
+.nav-item .ni-txt{flex:1;min-width:0;}
+.nav-item .ni-name{font-size:.92em;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-item .ni-cat{font-size:.72em;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-item .ni-actions{display:flex;gap:4px;opacity:0;transition:var(--transition);}
+.nav-item:hover .ni-actions{opacity:1;}
+.mini-btn{width:26px;height:26px;border:none;border-radius:7px;cursor:pointer;font-size:.8em;display:flex;align-items:center;justify-content:center;background:#e8ecf4;transition:var(--transition);}
+.mini-btn:hover{background:#d5dbe8;}
+.mini-btn.del:hover{background:#fbdcdc;}
+.sb-empty{text-align:center;color:var(--grey);padding:40px 16px;font-size:.85em;}
 
-/* empty state */
-.empty{max-width:1280px;margin:60px auto;padding:0 28px;text-align:center;color:var(--grey);}
-.empty .big{font-size:3.5em;margin-bottom:12px;}
-.empty h3{font-size:1.3em;color:var(--dark);margin-bottom:8px;}
+/* ===== MAIN PREVIEW ===== */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.preview-bar{
+  background:#fff;border-bottom:1px solid #e6e9f0;padding:12px 20px;
+  display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);
+}
+.preview-bar .pv-icon{width:40px;height:40px;border-radius:10px;background:var(--accent-soft,#e6f0fa);display:flex;align-items:center;justify-content:center;font-size:1.35em;flex-shrink:0;}
+.preview-bar .pv-info{flex:1;min-width:0;}
+.preview-bar .pv-name{font-size:1.08em;font-weight:800;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.preview-bar .pv-url{font-size:.78em;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.preview-frame-wrap{flex:1;position:relative;background:#eef1f6;}
+.preview-frame-wrap iframe{width:100%;height:100%;border:none;background:#fff;}
 
-/* ===== MODAL ===== */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(20,20,40,.55);z-index:200;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);}
+/* welcome / empty preview */
+.pv-welcome{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--grey);padding:30px;}
+.pv-welcome .big{font-size:4.5em;margin-bottom:16px;}
+.pv-welcome h2{font-size:1.5em;color:var(--dark);margin-bottom:8px;}
+.pv-welcome p{max-width:420px;line-height:1.6;}
+
+/* ===== MODAL (SCROLLABLE FIX) ===== */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(20,20,40,.55);z-index:200;
+  align-items:flex-start;justify-content:center;padding:24px 20px;backdrop-filter:blur(3px);overflow-y:auto;}
 .modal-bg.show{display:flex;}
-.modal{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .25s ease;}
-@keyframes pop{from{opacity:0;transform:scale(.94) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
-.modal h2{font-size:1.35em;margin-bottom:18px;color:var(--dark);}
-.modal label{display:block;font-size:.85em;font-weight:700;color:var(--dark);margin:14px 0 6px;}
-.modal input,.modal textarea,.modal select{width:100%;padding:11px 13px;border:2px solid #e2e6ee;border-radius:10px;font-size:.95em;font-family:inherit;transition:var(--transition);}
-.modal input:focus,.modal textarea:focus,.modal select:focus{outline:none;border-color:var(--blue);}
-.modal textarea{resize:vertical;min-height:60px;}
-.icon-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
-.icon-opt{width:42px;height:42px;border:2px solid #e2e6ee;border-radius:10px;font-size:1.3em;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);}
+.modal{background:#fff;border-radius:18px;padding:26px;width:100%;max-width:480px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .25s ease;
+  max-height:calc(100vh - 48px);overflow-y:auto;margin:auto;}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+.modal h2{font-size:1.3em;margin-bottom:16px;color:var(--dark);}
+.modal label{display:block;font-size:.83em;font-weight:700;color:var(--dark);margin:13px 0 6px;}
+.modal input,.modal textarea{width:100%;padding:11px 13px;border:2px solid #e2e6ee;border-radius:10px;font-size:.94em;font-family:inherit;transition:var(--transition);}
+.modal input:focus,.modal textarea:focus{outline:none;border-color:var(--blue);}
+.modal textarea{resize:vertical;min-height:58px;}
+.icon-picker{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;}
+.icon-opt{width:40px;height:40px;border:2px solid #e2e6ee;border-radius:10px;font-size:1.25em;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);}
 .icon-opt:hover{border-color:var(--blue);}
 .icon-opt.sel{border-color:var(--blue);background:#e6f0fa;}
 .color-picker{display:flex;gap:10px;margin-top:6px;}
-.color-opt{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:var(--transition);}
+.color-opt{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:var(--transition);}
 .color-opt.sel{border-color:var(--dark);transform:scale(1.12);}
-.modal-btns{display:flex;gap:10px;margin-top:24px;}
-.modal-btns .btn{flex:1;justify-content:center;}
+/* sticky footer buttons so Save is ALWAYS visible */
+.modal-btns{display:flex;gap:10px;margin-top:22px;position:sticky;bottom:-26px;background:#fff;padding:14px 0 2px;border-top:1px solid #f0f2f7;}
+.modal-btns .btn{flex:1;padding:12px;font-size:.92em;}
 
-/* footer */
-.footer{text-align:center;padding:22px;color:var(--grey);font-size:.85em;border-top:1px solid #e6e9f0;background:#fff;}
-
-@media(max-width:600px){
-  .header{padding:18px 20px;}
-  .header .htext h1{font-size:1.2em;}
-  .grid{padding:0 16px;grid-template-columns:1fr;}
-  .toolbar,.cats{padding:0 16px;}
+@media(max-width:820px){
+  body{overflow:auto;}
+  .app{flex-direction:column;height:auto;}
+  .sidebar{width:100%;min-width:0;height:auto;}
+  .sb-list{max-height:340px;}
+  .main{min-height:70vh;}
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">🖥️</div>
-  <div class="htext">
-    <h1>Monitoring Hub</h1>
-    <p>Pusat Kendali Semua Dashboard — Toyota-Astra Motor</p>
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="top">
+        <div class="logo">🖥️</div>
+        <div>
+          <h1>Monitoring Hub</h1>
+          <p>Pusat Kendali Dashboard-Muhammad Nizar</p>
+        </div>
+      </div>
+      <div class="sb-stats">
+        <div class="st"><div class="n" id="statTotal">0</div><div class="l">Dashboard</div></div>
+        <div class="st"><div class="n" id="statCat">0</div><div class="l">Kategori</div></div>
+      </div>
+    </div>
+
+    <div class="sb-tools">
+      <div class="sb-search">
+        <span class="ico">🔍</span>
+        <input type="text" id="searchBox" placeholder="Cari dashboard..." oninput="renderList()">
+      </div>
+      <div class="sb-btns">
+        <button class="btn btn-red" onclick="openModal()">＋ Tambah</button>
+        <button class="btn btn-outline" onclick="exportConfig()" title="Backup daftar">⬇</button>
+        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()" title="Restore daftar">⬆</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importConfig(this)">
+      </div>
+    </div>
+
+    <div class="sb-list" id="navList"></div>
+  </aside>
+
+  <!-- ===== MAIN PREVIEW ===== -->
+  <div class="main">
+    <div class="preview-bar" id="previewBar" style="display:none;">
+      <div class="pv-icon" id="pvIcon">📊</div>
+      <div class="pv-info">
+        <div class="pv-name" id="pvName">—</div>
+        <div class="pv-url" id="pvUrl">—</div>
+      </div>
+      <button class="btn btn-outline" onclick="reloadPreview()" title="Muat ulang preview">🔄</button>
+      <button class="btn btn-blue" onclick="openFull()">↗ Buka Tab Baru</button>
+    </div>
+    <div class="preview-frame-wrap">
+      <iframe id="previewFrame" src="about:blank" style="display:none;"></iframe>
+      <div class="pv-welcome" id="pvWelcome">
+        <div class="big">👈</div>
+        <h2>Pilih Dashboard</h2>
+        <p>Klik salah satu dashboard di menu sebelah kiri untuk menampilkan preview-nya di sini. Kamu juga bisa menambah dashboard baru dengan tombol <b>＋ Tambah</b>.</p>
+      </div>
+    </div>
   </div>
-  <div class="hspace"></div>
-  <div class="hstat"><div class="num" id="statTotal">0</div><div class="lbl">Dashboard</div></div>
-  <div class="hstat"><div class="num" id="statCat">0</div><div class="lbl">Kategori</div></div>
+
 </div>
 
-<!-- TOOLBAR -->
-<div class="toolbar">
-  <div class="search">
-    <span class="ico">🔍</span>
-    <input type="text" id="searchBox" placeholder="Cari dashboard..." oninput="renderCards()">
-  </div>
-  <button class="btn btn-red" onclick="openModal()">＋ Tambah Dashboard</button>
-  <button class="btn btn-outline" onclick="exportConfig()">⬇ Backup</button>
-  <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">⬆ Restore</button>
-  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importConfig(this)">
-</div>
-
-<!-- CATEGORY FILTER -->
-<div class="cats" id="catBar"></div>
-
-<!-- GRID -->
-<div class="grid" id="grid"></div>
-<div class="empty" id="emptyState" style="display:none;">
-  <div class="big">📭</div>
-  <h3>Belum ada dashboard</h3>
-  <p>Klik "＋ Tambah Dashboard" untuk menambahkan link dashboard pertama kamu.</p>
-</div>
-
-<!-- MODAL -->
+<!-- ===== MODAL ===== -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
     <h2 id="modalTitle">Tambah Dashboard</h2>
@@ -166,8 +206,6 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--li
   </div>
 </div>
 
-<div class="footer">© 2026 Toyota-Astra Motor — Monitoring Hub. Semua data tersimpan otomatis di browser ini.</div>
-
 <script>
 // ============ DATA ============
 const ICONS = ['📊','📈','📉','🗂️','📋','🚗','🏭','📦','🔧','⚙️','🛠️','📍','🗺️','🎯','⏱️','💹','🧭','🔍','🖥️','📅'];
@@ -175,7 +213,6 @@ const COLORS = [
   {c:'#0066B1',s:'#e6f0fa'}, {c:'#EB0A1E',s:'#fde5e7'}, {c:'#28A745',s:'#e4f5ea'},
   {c:'#E67E22',s:'#fcefe1'}, {c:'#6F42C1',s:'#efe8fa'}, {c:'#17A2B8',s:'#e1f4f7'}
 ];
-
 function getDefault(){
   return [
     { id:uid(), name:'Dashboard Genba Management CCY', url:'https://nizar-cyber.github.io/Dasboard_Genba/',
@@ -186,69 +223,82 @@ function getDefault(){
 function uid(){ return 'd'+Date.now()+Math.floor(Math.random()*1000); }
 
 let cards = JSON.parse(localStorage.getItem('hub_cards')||'null') || getDefault();
-let activeCat = 'Semua';
+let activeId = null;
 let selIcon = ICONS[0];
 let selColor = COLORS[0];
 
 function persist(){ localStorage.setItem('hub_cards', JSON.stringify(cards)); }
 function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ============ RENDER ============
+// ============ SIDEBAR LIST ============
 function getCats(){
   let set=new Set(); cards.forEach(c=>{ if(c.cat&&c.cat.trim()) set.add(c.cat.trim()); });
-  return ['Semua', ...Array.from(set).sort()];
+  return Array.from(set).sort();
 }
-function renderCatBar(){
-  let html=''; getCats().forEach(cat=>{
-    html+='<div class="chip'+(cat===activeCat?' active':'')+'" onclick="setCat(\''+esc(cat).replace(/'/g,"\\'")+'\')">'+esc(cat)+'</div>';
-  });
-  document.getElementById('catBar').innerHTML=html;
-  // datalist for modal
-  let dl=''; getCats().filter(c=>c!=='Semua').forEach(c=>dl+='<option value="'+esc(c)+'">');
-  document.getElementById('catList').innerHTML=dl;
-}
-function setCat(cat){ activeCat=cat; renderCatBar(); renderCards(); }
-
-function renderCards(){
+function renderList(){
   let q=(document.getElementById('searchBox').value||'').toLowerCase();
-  let list=cards.filter(c=>{
-    let matchCat = activeCat==='Semua' || c.cat===activeCat;
-    let matchQ = !q || (c.name+' '+c.desc+' '+c.cat).toLowerCase().includes(q);
-    return matchCat && matchQ;
-  });
-  let g=document.getElementById('grid');
-  if(!list.length){ g.innerHTML=''; document.getElementById('emptyState').style.display= cards.length? 'none':'block';
-    if(cards.length){ g.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="big">🔍</div><h3>Tidak ditemukan</h3><p>Coba kata kunci atau kategori lain.</p></div>'; }
-    updateStats(); return;
-  }
-  document.getElementById('emptyState').style.display='none';
+  let list=cards.filter(c=> !q || (c.name+' '+c.desc+' '+c.cat).toLowerCase().includes(q));
+  let el=document.getElementById('navList');
+
+  if(!cards.length){ el.innerHTML='<div class="sb-empty">📭<br><br>Belum ada dashboard.<br>Klik <b>＋ Tambah</b> untuk mulai.</div>'; updateStats(); return; }
+  if(!list.length){ el.innerHTML='<div class="sb-empty">🔍<br><br>Tidak ada hasil untuk "<b>'+esc(q)+'</b>".</div>'; updateStats(); return; }
+
+  // group by category
+  let groups={}; let noCat=[];
+  list.forEach(c=>{ if(c.cat&&c.cat.trim()){ (groups[c.cat.trim()]=groups[c.cat.trim()]||[]).push(c); } else noCat.push(c); });
+  let cats=Object.keys(groups).sort();
+
   let html='';
-  list.forEach(c=>{
-    html+='<div class="card" style="--accent:'+c.color+';--accent-soft:'+(c.soft||'#e6f0fa')+'" onclick="openDash(\''+c.id+'\')">';
-    html+='<div class="c-top">';
-    html+='<div class="c-icon">'+(c.icon||'📊')+'</div>';
-    html+='<div><div class="c-title">'+esc(c.name)+'</div>';
-    if(c.cat) html+='<span class="c-cat">'+esc(c.cat)+'</span>';
-    html+='</div></div>';
-    html+='<div class="c-desc">'+(c.desc?esc(c.desc):'<i>Tidak ada deskripsi</i>')+'</div>';
-    html+='<div class="c-foot">';
-    html+='<span class="c-open">Buka Dashboard →</span>';
-    html+='<div class="c-actions" onclick="event.stopPropagation()">';
-    html+='<button class="icon-btn" title="Edit" onclick="editCard(\''+c.id+'\')">✏️</button>';
-    html+='<button class="icon-btn del" title="Hapus" onclick="delCard(\''+c.id+'\')">🗑️</button>';
-    html+='</div></div></div>';
+  cats.forEach(cat=>{
+    html+='<div class="cat-group"><div class="cat-label">'+esc(cat)+'</div>';
+    groups[cat].forEach(c=>{ html+=itemHtml(c); });
+    html+='</div>';
   });
-  g.innerHTML=html;
+  if(noCat.length){
+    html+='<div class="cat-group"><div class="cat-label">Lainnya</div>';
+    noCat.forEach(c=>{ html+=itemHtml(c); });
+    html+='</div>';
+  }
+  el.innerHTML=html;
   updateStats();
+}
+function itemHtml(c){
+  let act=(c.id===activeId)?' active':'';
+  let h='<div class="nav-item'+act+'" style="--accent:'+c.color+';--accent-soft:'+(c.soft||'#e6f0fa')+'" onclick="selectDash(\''+c.id+'\')">';
+  h+='<div class="ni-icon">'+(c.icon||'📊')+'</div>';
+  h+='<div class="ni-txt"><div class="ni-name">'+esc(c.name)+'</div><div class="ni-cat">'+(c.cat?esc(c.cat):'Tanpa kategori')+'</div></div>';
+  h+='<div class="ni-actions" onclick="event.stopPropagation()">';
+  h+='<button class="mini-btn" title="Edit" onclick="editCard(\''+c.id+'\')">✏️</button>';
+  h+='<button class="mini-btn del" title="Hapus" onclick="delCard(\''+c.id+'\')">🗑️</button>';
+  h+='</div></div>';
+  return h;
 }
 function updateStats(){
   document.getElementById('statTotal').textContent=cards.length;
-  document.getElementById('statCat').textContent=getCats().length-1;
+  document.getElementById('statCat').textContent=getCats().length;
 }
-function openDash(id){
+
+// ============ PREVIEW ============
+function selectDash(id){
   let c=cards.find(x=>x.id===id); if(!c) return;
+  activeId=id;
   if(!c.url){ alert('Dashboard ini belum ada URL-nya. Klik ✏️ untuk menambahkan.'); return; }
-  window.open(c.url,'_blank');
+  document.getElementById('pvWelcome').style.display='none';
+  let f=document.getElementById('previewFrame');
+  f.style.display='block'; f.src=c.url;
+  document.getElementById('previewBar').style.display='flex';
+  document.getElementById('pvIcon').textContent=c.icon||'📊';
+  document.getElementById('pvIcon').style.background=c.soft||'#e6f0fa';
+  document.getElementById('pvName').textContent=c.name;
+  document.getElementById('pvUrl').textContent=c.url;
+  renderList();
+}
+function reloadPreview(){
+  let c=cards.find(x=>x.id===activeId); if(!c) return;
+  document.getElementById('previewFrame').src=c.url;
+}
+function openFull(){
+  let c=cards.find(x=>x.id===activeId); if(c&&c.url) window.open(c.url,'_blank');
 }
 
 // ============ MODAL ============
@@ -257,10 +307,11 @@ function buildPickers(){
   document.getElementById('iconPicker').innerHTML=ih;
   let ch=''; COLORS.forEach(col=>{ ch+='<div class="color-opt'+(col.c===selColor.c?' sel':'')+'" style="background:'+col.c+'" onclick="pickColor(\''+col.c+'\',\''+col.s+'\')"></div>'; });
   document.getElementById('colorPicker').innerHTML=ch;
+  let dl=''; getCats().forEach(c=>dl+='<option value="'+esc(c)+'">');
+  document.getElementById('catList').innerHTML=dl;
 }
 function pickIcon(ic){ selIcon=ic; buildPickers(); }
 function pickColor(c,s){ selColor={c:c,s:s}; buildPickers(); }
-
 function openModal(){
   document.getElementById('modalTitle').textContent='Tambah Dashboard';
   document.getElementById('editId').value='';
@@ -288,24 +339,31 @@ function saveCard(){
   let url=document.getElementById('fUrl').value.trim();
   if(!name){ alert('Nama dashboard wajib diisi.'); return; }
   if(!url){ alert('Link / URL wajib diisi.'); return; }
-  if(!/^https?:\/\//i.test(url)) url='https://'+url; // auto-prefix
+  if(!/^https?:\/\//i.test(url)) url='https://'+url;
   let desc=document.getElementById('fDesc').value.trim();
   let cat=document.getElementById('fCat').value.trim();
   let id=document.getElementById('editId').value;
   if(id){
     let c=cards.find(x=>x.id===id);
     Object.assign(c,{name,url,desc,cat,icon:selIcon,color:selColor.c,soft:selColor.s});
+    if(activeId===id) selectDash(id);
   } else {
-    cards.push({id:uid(),name,url,desc,cat,icon:selIcon,color:selColor.c,soft:selColor.s});
+    let nc={id:uid(),name,url,desc,cat,icon:selIcon,color:selColor.c,soft:selColor.s};
+    cards.push(nc);
   }
-  persist(); closeModal(); renderCatBar(); renderCards();
+  persist(); closeModal(); renderList();
 }
 function delCard(id){
   let c=cards.find(x=>x.id===id);
   if(confirm('Hapus dashboard "'+(c?c.name:'')+'" dari hub?\n(Ini hanya menghapus link, dashboard aslinya tetap aman.)')){
     cards=cards.filter(x=>x.id!==id);
-    if(activeCat!=='Semua' && !cards.some(x=>x.cat===activeCat)) activeCat='Semua';
-    persist(); renderCatBar(); renderCards();
+    if(activeId===id){ activeId=null;
+      document.getElementById('previewFrame').style.display='none';
+      document.getElementById('previewFrame').src='about:blank';
+      document.getElementById('previewBar').style.display='none';
+      document.getElementById('pvWelcome').style.display='flex';
+    }
+    persist(); renderList();
   }
 }
 
@@ -326,7 +384,10 @@ function importConfig(input){
       if(!Array.isArray(data)) throw new Error('format');
       if(confirm('Restore '+data.length+' dashboard? Ini akan mengganti daftar saat ini.')){
         cards=data.map(c=>({id:c.id||uid(),name:c.name||'',url:c.url||'',desc:c.desc||'',cat:c.cat||'',icon:c.icon||'📊',color:c.color||'#0066B1',soft:c.soft||'#e6f0fa'}));
-        activeCat='Semua'; persist(); renderCatBar(); renderCards();
+        activeId=null; persist(); renderList();
+        document.getElementById('previewFrame').style.display='none';
+        document.getElementById('previewBar').style.display='none';
+        document.getElementById('pvWelcome').style.display='flex';
         alert('✅ Berhasil restore '+cards.length+' dashboard.');
       }
     }catch(err){ alert('❌ File tidak valid. Pastikan file backup dari Monitoring Hub.'); }
@@ -340,8 +401,7 @@ document.getElementById('modalBg').addEventListener('click',function(e){ if(e.ta
 document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeModal(); });
 
 // ============ INIT ============
-renderCatBar();
-renderCards();
+renderList();
 </script>
 </body>
 </html>
