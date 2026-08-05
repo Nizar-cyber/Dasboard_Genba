@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>QCC Kurawa - Circle Leader Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+// ============= 3D ANIMATIONS =============
+function initAnimations(){
+ var cards=document.querySelectorAll('.kpi-card');
+ for(var i=0;i<cards.length;i++){cards[i].classList.add('anim-scale');cards[i].style.animationDelay=(i*0.1)+'s'}
+ var charts=document.querySelectorAll('.chart-box');
+ for(var i=0;i<charts.length;i++){charts[i].classList.add('anim-up');charts[i].style.animationDelay=(0.3+i*0.15)+'s'}
+ var sections=document.querySelectorAll('.section');
+ for(var i=0;i<sections.length;i++){sections[i].classList.add('scroll-hidden')}
+ var fb=document.querySelector('.filter-bar');
+ if(fb){fb.classList.add('anim-left');fb.style.animationDelay='0.2s'}
+ var ab=document.querySelector('.ai-bar');
+ if(ab){ab.classList.add('anim-right');ab.style.animationDelay='0.15s'}
+ var uz=document.querySelector('.upload-zone');
+ if(uz){uz.classList.add('anim-up');uz.style.animationDelay='0.1s'}
+ if('IntersectionObserver' in window){
+  var observer=new IntersectionObserver(function(entries){
+   entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('scroll-visible');observer.unobserve(entry.target)}});
+  },{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+  for(var i=0;i<sections.length;i++){observer.observe(sections[i])}
+ }else{for(var i=0;i<sections.length;i++){sections[i].classList.add('scroll-visible')}}
+}
+function animateCounter(el,target,suffix){
+ suffix=suffix||'';var dur=900;var startTime=null;
+ function step(ts){if(!startTime)startTime=ts;var p=Math.min((ts-startTime)/dur,1);var e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e)+suffix;if(p<1)requestAnimationFrame(step)}
+ requestAnimationFrame(step);
+}
+function animateCounters(){
+ var pairs=[['kv1',''],['kv2','%'],['kv6','']];
+ pairs.forEach(function(pair){
+  var el=document.getElementById(pair[0]);if(!el)return;
+  var n=parseFloat(el.textContent.replace(/[^0-9.]/g,''));
+  if(isNaN(n)||n===0)return;animateCounter(el,n,pair[1]);
+ });
+}
+document.addEventListener('mousemove',function(e){
+ var cards=document.querySelectorAll('.kpi-card');
+ for(var i=0;i<cards.length;i++){
+  var card=cards[i];var rect=card.getBoundingClientRect();
+  var cx=rect.left+rect.width/2;var cy=rect.top+rect.height/2;
+  var dx=(e.clientX-cx)/rect.width;var dy=(e.clientY-cy)/rect.height;
+  if(Math.sqrt(dx*dx+dy*dy)<1.5){card.style.transform='rotateY('+(dx*8)+'deg) rotateX('+(-dy*8)+'deg) translateZ(5px)'}
+  else{card.style.transform=''}
+ }
+});
+setTimeout(initAnimations,100);
+setTimeout(animateCounters,800);
+
+</script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js">
+// ============= 3D ANIMATIONS =============
+function initAnimations(){
+ var cards=document.querySelectorAll('.kpi-card');
+ for(var i=0;i<cards.length;i++){cards[i].classList.add('anim-scale');cards[i].style.animationDelay=(i*0.1)+'s'}
+ var charts=document.querySelectorAll('.chart-box');
+ for(var i=0;i<charts.length;i++){charts[i].classList.add('anim-up');charts[i].style.animationDelay=(0.3+i*0.15)+'s'}
+ var sections=document.querySelectorAll('.section');
+ for(var i=0;i<sections.length;i++){sections[i].classList.add('scroll-hidden')}
+ var fb=document.querySelector('.filter-bar');
+ if(fb){fb.classList.add('anim-left');fb.style.animationDelay='0.2s'}
+ var ab=document.querySelector('.ai-bar');
+ if(ab){ab.classList.add('anim-right');ab.style.animationDelay='0.15s'}
+ var uz=document.querySelector('.upload-zone');
+ if(uz){uz.classList.add('anim-up');uz.style.animationDelay='0.1s'}
+ if('IntersectionObserver' in window){
+  var observer=new IntersectionObserver(function(entries){
+   entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('scroll-visible');observer.unobserve(entry.target)}});
+  },{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+  for(var i=0;i<sections.length;i++){observer.observe(sections[i])}
+ }else{for(var i=0;i<sections.length;i++){sections[i].classList.add('scroll-visible')}}
+}
+function animateCounter(el,target,suffix){
+ suffix=suffix||'';var dur=900;var startTime=null;
+ function step(ts){if(!startTime)startTime=ts;var p=Math.min((ts-startTime)/dur,1);var e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e)+suffix;if(p<1)requestAnimationFrame(step)}
+ requestAnimationFrame(step);
+}
+function animateCounters(){
+ var pairs=[['kv1',''],['kv2','%'],['kv6','']];
+ pairs.forEach(function(pair){
+  var el=document.getElementById(pair[0]);if(!el)return;
+  var n=parseFloat(el.textContent.replace(/[^0-9.]/g,''));
+  if(isNaN(n)||n===0)return;animateCounter(el,n,pair[1]);
+ });
+}
+document.addEventListener('mousemove',function(e){
+ var cards=document.querySelectorAll('.kpi-card');
+ for(var i=0;i<cards.length;i++){
+  var card=cards[i];var rect=card.getBoundingClientRect();
+  var cx=rect.left+rect.width/2;var cy=rect.top+rect.height/2;
+  var dx=(e.clientX-cx)/rect.width;var dy=(e.clientY-cy)/rect.height;
+  if(Math.sqrt(dx*dx+dy*dy)<1.5){card.style.transform='rotateY('+(dx*8)+'deg) rotateX('+(-dy*8)+'deg) translateZ(5px)'}
+  else{card.style.transform=''}
+ }
+});
+setTimeout(initAnimations,100);
+setTimeout(animateCounters,800);
+
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#333}
+.header{background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 100%);color:#fff;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.header h1{font-size:24px;letter-spacing:0.5px}
+.header .sub{font-size:13px;color:#93b8d7;margin-top:4px}
+.header .badge{background:#E67E22;color:#fff;padding:6px 16px;border-radius:20px;font-weight:700;font-size:13px}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.filter-bar{background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.filter-bar label{font-size:12px;font-weight:600;color:#666;display:flex;flex-direction:column;gap:4px}
+.filter-bar select{padding:8px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;min-width:160px;background:#f8f9fa}
+.filter-bar select:focus{border-color:#3498DB;outline:none}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:#3498DB;color:#fff}
+.btn-primary:hover{background:#2980B9}
+.btn-danger{background:#E74C3C;color:#fff}
+.btn-danger:hover{background:#C0392B}
+.btn-success{background:#27AE60;color:#fff}
+.btn-success:hover{background:#219A52}
+.btn-outline{background:#fff;color:#1B3A5C;border:1.5px solid #1B3A5C}
+.btn-outline:hover{background:#1B3A5C;color:#fff}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.kpi-card{background:#fff;border-radius:12px;padding:20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);border-top:4px solid #3498DB;transition:transform 0.2s}
+.kpi-card:hover{transform:translateY(-2px)}
+.kpi-card .value{font-size:32px;font-weight:700;color:#1B3A5C;margin:8px 0}
+.kpi-card .label{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.kpi-card .detail{font-size:11px;color:#aaa;margin-top:4px}
+.kpi-card.green{border-top-color:#27AE60}
+.kpi-card.orange{border-top-color:#E67E22}
+.kpi-card.red{border-top-color:#E74C3C}
+.kpi-card.purple{border-top-color:#9B59B6}
+.kpi-card.teal{border-top-color:#1ABC9C}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.chart-box{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.chart-box h3{font-size:15px;color:#1B3A5C;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #f0f2f5}
+.chart-box.full{grid-column:1/-1}
+.section{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.section h2{font-size:18px;color:#1B3A5C;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#1B3A5C;color:#fff;padding:10px 8px;text-align:center;font-weight:600;font-size:12px;position:sticky;top:0;z-index:1}
+td{padding:8px;text-align:center;border-bottom:1px solid #eee}
+tr:nth-child(even){background:#f8f9fa}
+tr:hover{background:#e8f4fd}
+.badge-hadir{background:#27AE60;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-keluar{background:#E67E22;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-diundang{background:#bdc3c7;color:#555;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.badge-tidak{background:#ecf0f1;color:#aaa;padding:3px 10px;border-radius:12px;font-size:11px}
+.badge-cat{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.cat-diskusi{background:#3498DB22;color:#2980B9}
+.cat-share{background:#9B59B622;color:#8E44AD}
+.cat-assessment{background:#27AE6022;color:#219A52}
+.cat-izin{background:#E74C3C22;color:#C0392B}
+.cat-lainnya{background:#95a5a622;color:#7f8c8d}
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.insight-card{background:#f8f9fa;border-radius:10px;padding:16px;border-left:4px solid #3498DB;box-shadow:0 2px 5px rgba(0,0,0,0.03)}
+.insight-card.warn{border-left-color:#E67E22}
+.insight-card.danger{border-left-color:#E74C3C}
+.insight-card.success{border-left-color:#27AE60}
+.insight-card.purple{border-left-color:#9B59B6}
+.insight-card h4{font-size:14px;color:#1B3A5C;margin-bottom:8px;font-weight:700}
+.insight-card p{font-size:13px;color:#555;line-height:1.6}
+.scroll-table{max-height:400px;overflow-y:auto;border-radius:8px;border:1px solid #eee}
+.search-box{width:100%;padding:10px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px}
+.search-box:focus{border-color:#3498DB;outline:none}
+.upload-zone{border:2px dashed #3498DB;border-radius:12px;padding:20px;text-align:center;color:#3498DB;cursor:pointer;transition:all 0.2s;margin-bottom:20px;background:#f8fbff}
+.upload-zone:hover{background:#e8f4fd;border-color:#2980B9}
+.upload-zone.dragover{background:#d5e8f7;border-color:#1B3A5C}
+.upload-zone input{display:none}
+.upload-zone p{margin:4px 0;font-size:13px}
+.upload-zone .icon{font-size:32px}
+.footer{text-align:center;padding:20px;color:#999;font-size:12px}
+@media(max-width:768px){.chart-grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:1fr 1fr}}
+
+.ai-bar{background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:end;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.ai-bar label{font-size:12px;font-weight:600;color:#666;display:flex;flex-direction:column;gap:4px}
+.ai-bar input,.ai-bar select{padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#f8f9fa}
+.ai-bar input:focus,.ai-bar select:focus{border-color:#3498DB;outline:none}
+.ai-note{font-size:11px;color:#95a5a6;margin-top:6px;line-height:1.5}
+.ai-out{background:#f0f7ff;border:1.5px solid #bdd8f1;border-radius:10px;padding:18px;white-space:pre-wrap;line-height:1.7;color:#2c3e50;font-size:13px;margin-bottom:16px}
+.ai-st{font-size:12px;font-weight:700;margin-top:4px}
+.ai-st.ok{color:#27AE60}.ai-st.err{color:#E74C3C}.ai-st.run{color:#2980B9}
+
+/* === 3D ANIMATIONS === */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeInRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+@keyframes floatBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulseGlow{0%,100%{text-shadow:none}50%{text-shadow:0 0 25px rgba(52,152,219,0.6)}}
+@keyframes gradientBG{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+@keyframes rotateIn{from{opacity:0;transform:perspective(600px) rotateY(-15deg)}to{opacity:1;transform:perspective(600px) rotateY(0)}}
+body{background:linear-gradient(-45deg,#e8f0fe,#f0f2f5,#e3f2fd,#f5f0ff)!important;background-size:400% 400%!important;animation:gradientBG 20s ease infinite!important}
+.header{backdrop-filter:blur(8px);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 60%);animation:floatBounce 6s ease-in-out infinite;pointer-events:none}
+.header h1{text-shadow:0 2px 4px rgba(0,0,0,0.3),0 4px 8px rgba(0,0,0,0.15)}
+.anim-up{animation:fadeInUp 0.7s cubic-bezier(0.16,1,0.3,1) both}
+.anim-left{animation:fadeInLeft 0.7s cubic-bezier(0.16,1,0.3,1) both}
+.anim-right{animation:fadeInRight 0.7s cubic-bezier(0.16,1,0.3,1) both}
+.anim-scale{animation:scaleIn 0.6s cubic-bezier(0.16,1,0.3,1) both}
+.anim-rotate{animation:rotateIn 0.8s cubic-bezier(0.16,1,0.3,1) both}
+.kpi-card{perspective:800px;transform-style:preserve-3d;transition:all 0.4s cubic-bezier(0.16,1,0.3,1)!important}
+.kpi-card:hover{box-shadow:0 20px 40px rgba(0,0,0,0.15),0 0 30px rgba(52,152,219,0.1)!important}
+.kpi-card .value{animation:pulseGlow 3s ease-in-out infinite}
+.chart-box{transition:all 0.4s cubic-bezier(0.16,1,0.3,1)!important;transform-style:preserve-3d}
+.chart-box:hover{transform:translateY(-8px) rotateX(2deg)!important;box-shadow:0 25px 50px rgba(0,0,0,0.12)!important}
+.insight-card{transition:all 0.35s cubic-bezier(0.16,1,0.3,1)!important;transform-style:preserve-3d}
+.insight-card:hover{transform:perspective(600px) rotateY(4deg) translateZ(10px) scale(1.02)!important;box-shadow:0 15px 35px rgba(0,0,0,0.1)!important}
+.upload-zone .icon{animation:floatBounce 2.5s ease-in-out infinite;display:inline-block}
+.upload-zone{transition:all 0.4s!important}
+.upload-zone:hover{transform:translateY(-4px) scale(1.01)!important;box-shadow:0 15px 30px rgba(52,152,219,0.15)!important}
+.btn{transition:all 0.25s cubic-bezier(0.16,1,0.3,1)!important}
+.btn:hover{transform:translateY(-3px) scale(1.03)!important;box-shadow:0 8px 20px rgba(0,0,0,0.15)!important}
+.btn:active{transform:translateY(1px) scale(0.98)!important}
+.section{transition:all 0.4s cubic-bezier(0.16,1,0.3,1)!important}
+.section:hover{box-shadow:0 15px 35px rgba(0,0,0,0.08)!important}
+.filter-bar,.ai-bar{transition:all 0.3s!important}
+.filter-bar:hover,.ai-bar:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,0,0,0.08)!important}
+table tbody tr{transition:all 0.2s!important}
+table tbody tr:hover{transform:scale(1.005);box-shadow:0 4px 12px rgba(0,0,0,0.06);position:relative;z-index:1}
+.badge-hadir,.badge-keluar,.badge-diundang{position:relative;overflow:hidden}
+.badge-hadir::after,.badge-keluar::after,.badge-diundang::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:shimmer 3s ease-in-out infinite}
+.scroll-hidden{opacity:0;transform:translateY(30px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
+.scroll-visible{opacity:1!important;transform:translateY(0)!important}
+.badge{animation:floatBounce 3s ease-in-out infinite;display:inline-block}
+.footer{transition:all 0.3s}
+.footer:hover{transform:translateY(-2px)}
+
+</style>
+</head>
+<body>
+<div class="header">
+<div><h1>📊 QCC Kurawa — Circle Leader Monitoring Dashboard</h1>
+<div class="sub">Periode: Desember 2025 – Mei 2026 &nbsp;|&nbsp; Circle: Kurawa &nbsp;|&nbsp; Dept: NLO1 - Kaizen &nbsp;|&nbsp; PT Toyota-Astra Motor</div></div>
+<div class="badge">QCC KURAWA</div>
+</div>
+<div class="container">
+
+<!-- Upload Zone -->
+<div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+<input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+<div class="icon">📂</div>
+<p><b>Upload Data Excel Baru</b></p>
+<p>Klik atau drag & drop file .xlsx untuk update data meeting & absensi</p>
+<div id="uploadMsg" style="color:#27AE60;font-weight:600;margin-top:8px"></div>
+</div>
+
+<!-- AI Insight Panel -->
+<div class="ai-bar" id="aiPanel">
+ <label style="min-width:240px;flex:1">🔑 Gemini API Key<input type="password" id="geminiKey" placeholder="Paste API key dari Google AI Studio"></label>
+ <label>🤖 Model<select id="geminiModel"><option value="gemini-2.5-flash">gemini-2.5-flash</option><option value="gemini-2.0-flash">gemini-2.0-flash</option><option value="gemini-1.5-flash">gemini-1.5-flash</option></select></label>
+ <label style="min-width:220px;flex:1">🧠 Fokus Insight<input type="text" id="aiFocus" value="Ringkas insight QCC mingguan, risiko, member yang perlu perhatian, dan rekomendasi aksi konkret untuk Circle Leader."></label>
+ <div><button class="btn btn-primary" onclick="doAI()" id="btnAI">✨ Generate AI Insight</button></div>
+ <div style="width:100%"><p class="ai-note">⚠️ API key hanya dipakai saat sesi ini & tidak disimpan. Untuk keamanan produksi, Google menyarankan pemakaian server-side.</p><div id="aiSt" class="ai-st"></div></div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+<label>👤 Member<select id="fMember"><option value="">Semua Member</option></select></label>
+<label>📅 Bulan<select id="fMonth"><option value="">Semua Bulan</option></select></label>
+<label>📌 Status<select id="fStatus"><option value="">Semua Status</option><option>Hadir</option><option>Keluar Awal</option><option>Diundang</option><option>Tidak Diundang</option></select></label>
+<label>&nbsp;<button class="btn btn-danger" onclick="resetFilters()">🔄 Reset</button></label>
+<label>&nbsp;<button class="btn btn-success" onclick="exportCSV()">📥 Export CSV</button></label>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-row">
+<div class="kpi-card" id="kpi1"><div class="label">Total Meeting</div><div class="value" id="kv1">-</div><div class="detail" id="kd1"></div></div>
+<div class="kpi-card green" id="kpi2"><div class="label">Rata-rata Kehadiran</div><div class="value" id="kv2">-</div><div class="detail" id="kd2"></div></div>
+<div class="kpi-card teal" id="kpi3"><div class="label">Total Durasi</div><div class="value" id="kv3">-</div><div class="detail" id="kd3"></div></div>
+<div class="kpi-card purple" id="kpi4"><div class="label">Member Paling Aktif</div><div class="value" id="kv4" style="font-size:20px">-</div><div class="detail" id="kd4"></div></div>
+<div class="kpi-card orange" id="kpi5"><div class="label">Perlu Perhatian</div><div class="value" id="kv5" style="font-size:20px">-</div><div class="detail" id="kd5"></div></div>
+<div class="kpi-card red" id="kpi6"><div class="label">Keluar Awal</div><div class="value" id="kv6">-</div><div class="detail" id="kd6"></div></div>
+</div>
+
+<!-- Charts Row -->
+<div class="chart-grid">
+<div class="chart-box full"><h3>📊 Kehadiran per Member</h3><canvas id="chartAttendance"></canvas></div>
+</div>
+<div class="chart-grid">
+<div class="chart-box"><h3>📈 Trend Kehadiran per Meeting</h3><canvas id="chartTrend"></canvas></div>
+<div class="chart-box"><h3>🍩 Distribusi Status Kehadiran</h3><canvas id="chartDonut"></canvas></div>
+</div>
+<div class="chart-grid">
+<div class="chart-box"><h3>📅 Jumlah Meeting per Bulan</h3><canvas id="chartMonthly"></canvas></div>
+<div class="chart-box"><h3>💬 Aktivitas Chat per Member</h3><canvas id="chartChat"></canvas></div>
+</div>
+
+<!-- Attendance Matrix -->
+<div class="section">
+<h2>📋 Matrix Absensi Meeting</h2>
+<input class="search-box" id="searchAtt" placeholder="🔍 Cari nama member..." oninput="renderAttTable()">
+<div class="scroll-table" id="attTableWrap"></div>
+</div>
+
+<!-- Chat Activity -->
+<div class="section">
+<h2>💬 Log Aktivitas Chat Meeting</h2>
+<input class="search-box" id="searchChat" placeholder="🔍 Cari member, isi chat, kategori..." oninput="renderChatTable()">
+<div class="scroll-table" id="chatTableWrap"></div>
+</div>
+
+<!-- Rangkuman -->
+<div class="section">
+<h2>📝 Rangkuman & Insight</h2>
+<div id="aiOut" class="ai-out" style="display:none"></div>
+<div class="insight-grid" id="insightGrid"></div>
+</div>
+
+<div class="footer">QCC Kurawa Dashboard — Generated by AI Copilot — Data from Teams Calendar, Chat & Transcript | Muhammad Nizar © 2026</div>
+</div>
+
+<script>
+// ============= DATA RAW INITIAL =============
+let meetings = [{"no": 1, "tanggal": "2025-12-04", "hari": "Kamis", "judul": "QCC Kurawa", "organizer": "Moch. Yunan Farid", "tipe": "Online", "lokasi": "Teams", "durasi": 120}, {"no": 2, "tanggal": "2025-12-11", "hari": "Kamis", "judul": "QCC Kurawa", "organizer": "Moch. Yunan Farid", "tipe": "Online", "lokasi": "Teams", "durasi": 120}, {"no": 3, "tanggal": "2025-12-18", "hari": "Kamis", "judul": "QCC Kurawa", "organizer": "Moch. Yunan Farid", "tipe": "Online", "lokasi": "Teams", "durasi": 120}, {"no": 4, "tanggal": "2025-12-25", "hari": "Kamis", "judul": "QCC Kurawa", "organizer": "Moch. Yunan Farid", "tipe": "Online", "lokasi": "Teams", "durasi": 120}, {"no": 5, "tanggal": "2026-02-12", "hari": "Kamis", "judul": "QCC Kurawa", "organizer": "Muhammad Nizar", "tipe": "Online", "lokasi": "Teams", "durasi": 105}, {"no": 6, "tanggal": "2026-02-13", "hari": "Jumat", "judul": "QCC Kurawa", "organizer": "Muhammad Nizar", "tipe": "Online", "lokasi": "Teams", "durasi": 105}, {"no": 7, "tanggal": "2026-03-03", "hari": "Selasa", "judul": "QCC Kurawa", "organizer": "Muhammad Nizar", "tipe": "Online", "lokasi": "Teams", "durasi": 110}, {"no": 8, "tanggal": "2026-03-05", "hari": "Kamis", "judul": "QCC OFFLINE KURAWA SUNTER", "organizer": "Muhammad Nizar", "tipe": "Offline", "lokasi": "Veloz Room - Sunter 3", "durasi": 150}, {"no": 9, "tanggal": "2026-03-11", "hari": "Rabu", "judul": "update QCC kurawa", "organizer": "Muhammad Nizar", "tipe": "Online", "lokasi": "Teams", "durasi": 60}, {"no": 10, "tanggal": "2026-03-12", "hari": "Kamis", "judul": "QCC Kurawa", "organizer": "Moch. Yunan Farid", "tipe": "Online", "lokasi": "Teams", "durasi": 120}, {"no": 11, "tanggal": "2026-04-09", "hari": "Kamis", "judul": "QCC kurawa", "organizer": "Muhammad Nizar", "tipe": "Online", "lokasi": "Teams", "durasi": 165}, {"no": 12, "tanggal": "2026-04-17", "hari": "Jumat", "judul": "QCC Kurawa", "organizer": "Moch. Yunan Farid", "tipe": "Online", "lokasi": "Teams", "durasi": 120}, {"no": 13, "tanggal": "2026-05-08", "hari": "Jumat", "judul": "QCC Kurawa", "organizer": "-", "tipe": "Online", "lokasi": "Teams", "durasi": 0}];
+let members = ["Muhammad Nizar", "Moch. Yunan Farid", "Fazri Zamhari", "Syarif Hidayat", "Zainul Rasid", "Eko Utomo", "Atieqa Fikri", "Rusuk Ginarto", "Eka Murtianto"];
+let attendance = {"Muhammad Nizar": ["Diundang", "Diundang", "Diundang", "Diundang", "Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Diundang", "Hadir", "Hadir", "Hadir"], "Moch. Yunan Farid": ["Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Diundang", "Diundang", "Diundang", "Hadir", "Hadir", "Hadir", "Hadir"], "Fazri Zamhari": ["Diundang", "Diundang", "Diundang", "Diundang", "Keluar Awal", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Keluar Awal", "Diundang", "Diundang"], "Syarif Hidayat": ["Diundang", "Diundang", "Diundang", "Diundang", "Hadir", "Hadir", "Hadir", "Diundang", "Diundang", "Hadir", "Hadir", "Hadir", "Hadir"], "Zainul Rasid": ["Diundang", "Diundang", "Diundang", "Diundang", "Hadir", "Hadir", "Diundang", "Diundang", "Diundang", "Hadir", "Hadir", "Diundang", "Diundang"], "Eko Utomo": ["Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Hadir", "Diundang", "Hadir", "Hadir", "Hadir", "Hadir"], "Atieqa Fikri": ["Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Tidak Diundang"], "Rusuk Ginarto": ["Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Diundang", "Hadir", "Diundang", "Diundang", "Hadir", "Diundang", "Diundang", "Diundang"], "Eka Murtianto": ["Hadir", "Hadir", "Hadir", "Hadir", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang", "Tidak Diundang"]};
+let chatActs = [{"tanggal": "2025-12-04", "member": "Eko Utomo", "isi": "Share assessment form link ke member", "kategori": "Share Materi"}, {"tanggal": "2025-12-04", "member": "Moch. Yunan Farid", "isi": "Done Pak CL - assessment selesai", "kategori": "Assessment"}, {"tanggal": "2025-12-11", "member": "Eko Utomo", "isi": "Share code dan tools QCC", "kategori": "Share Materi"}, {"tanggal": "2025-12-11", "member": "Zainul Rasid", "isi": "X,Y done - assessment complete", "kategori": "Assessment"}, {"tanggal": "2025-12-18", "member": "Syarif Hidayat", "isi": "Share materi HR Jiritsuka", "kategori": "Share Materi"}, {"tanggal": "2025-12-18", "member": "Eko Utomo", "isi": "Diskusi problem tema QCC", "kategori": "Diskusi"}, {"tanggal": "2025-12-25", "member": "Eka Murtianto", "isi": "Unmatch location physical asset in NLO1", "kategori": "Diskusi"}, {"tanggal": "2026-02-12", "member": "Muhammad Nizar", "isi": "Diskusi teknis dan pembagian tugas", "kategori": "Diskusi"}, {"tanggal": "2026-02-12", "member": "Fazri Zamhari", "isi": "izin melipir bapak2, mau tanding Astra E_SPort", "kategori": "Izin"}, {"tanggal": "2026-02-12", "member": "Syarif Hidayat", "isi": "Share Google Form assessment", "kategori": "Share Materi"}, {"tanggal": "2026-02-12", "member": "Eko Utomo", "isi": "Diskusi assessment member", "kategori": "Assessment"}, {"tanggal": "2026-02-13", "member": "Muhammad Nizar", "isi": "Lanjutan diskusi QCC", "kategori": "Diskusi"}, {"tanggal": "2026-02-13", "member": "Zainul Rasid", "isi": "tes teams - cek koneksi", "kategori": "Lainnya"}, {"tanggal": "2026-03-03", "member": "Eko Utomo", "isi": "Share problem brainstorming", "kategori": "Diskusi"}, {"tanggal": "2026-03-03", "member": "Syarif Hidayat", "isi": "Diskusi KPI direction 6 KPI cross 3", "kategori": "Diskusi"}, {"tanggal": "2026-03-03", "member": "Rusuk Ginarto", "isi": "Share problem tema buffer unit", "kategori": "Diskusi"}, {"tanggal": "2026-03-12", "member": "Rusuk Ginarto", "isi": "Pertemuan ke-4 QCC Kurawa", "kategori": "Diskusi"}, {"tanggal": "2026-03-12", "member": "Moch. Yunan Farid", "isi": "done sumbu Y assessment", "kategori": "Assessment"}, {"tanggal": "2026-03-12", "member": "Eko Utomo", "isi": "Diskusi dan share materi", "kategori": "Share Materi"}, {"tanggal": "2026-03-12", "member": "Syarif Hidayat", "isi": "Share GOTCHA NLO2 materi", "kategori": "Share Materi"}, {"tanggal": "2026-03-12", "member": "Zainul Rasid", "isi": "Diskusi problem tema", "kategori": "Diskusi"}, {"tanggal": "2026-04-09", "member": "Muhammad Nizar", "isi": "Diskusi teknis camera AI parking", "kategori": "Diskusi"}, {"tanggal": "2026-04-09", "member": "Eko Utomo", "isi": "Fazri keluar membeli konsumsi QCC - report", "kategori": "Lainnya"}, {"tanggal": "2026-04-09", "member": "Fazri Zamhari", "isi": "(keluar sebelum meeting selesai)", "kategori": "Izin"}, {"tanggal": "2026-04-09", "member": "Syarif Hidayat", "isi": "Diskusi safety dan Pareto Receiving", "kategori": "Diskusi"}, {"tanggal": "2026-04-17", "member": "Muhammad Nizar", "isi": "Review progress QCC", "kategori": "Diskusi"}, {"tanggal": "2026-04-17", "member": "Moch. Yunan Farid", "isi": "Share problem tema update", "kategori": "Share Materi"}, {"tanggal": "2026-05-08", "member": "Muhammad Nizar", "isi": "Diskusi camera AI dan parking SOP", "kategori": "Diskusi"}, {"slate-data": "2026-05-08", "member": "Eko Utomo", "isi": "Aktif diskusi dan share insight", "kategori": "Diskusi"}, {"tanggal": "2026-05-08", "member": "Syarif Hidayat", "isi": "Kontribusi diskusi teknis", "kategori": "Diskusi"}];
+
+let charts = {};
+
+// Initialization
+window.addEventListener('DOMContentLoaded', () => {
+  initFilterDropdowns();
+  setupUploadZone();
+  updateDashboard();
+});
+
+function initFilterDropdowns() {
+  const fMem = document.getElementById('fMember');
+  members.forEach(m => fMem.add(new Option(m, m)));
+  
+  const fMon = document.getElementById('fMonth');
+  let uniqueMonths = [...new Set(meetings.map(m => m.tanggal.substring(0, 7)))].sort();
+  uniqueMonths.forEach(mon => fMon.add(new Option(mon, mon)));
+
+  document.querySelectorAll('.filter-bar select').forEach(s => {
+    s.addEventListener('change', updateDashboard);
+  });
+}
+
+function resetFilters() {
+  document.getElementById('fMember').value = '';
+  document.getElementById('fMonth').value = '';
+  document.getElementById('fStatus').value = '';
+  document.getElementById('searchAtt').value = '';
+  document.getElementById('searchChat').value = '';
+  updateDashboard();
+}
+
+function getFilteredData() {
+  let selMember = document.getElementById('fMember').value;
+  let selMonth = document.getElementById('fMonth').value;
+  let selStatus = document.getElementById('fStatus').value;
+
+  let filteredMeetings = meetings.filter(m => {
+    if (selMonth && !m.tanggal.startsWith(selMonth)) return false;
+    return true;
+  });
+
+  let meetIndices = filteredMeetings.map(m => m.no - 1);
+
+  let filteredAttendance = {};
+  members.forEach(mem => {
+    if (selMember && mem !== selMember) return;
+    
+    let states = attendance[mem] || [];
+    let subset = meetIndices.map(idx => states[idx] || "Tidak Diundang");
+    
+    if (selStatus) {
+      if (!subset.includes(selStatus)) return; 
+    }
+    filteredAttendance[mem] = subset;
+  });
+
+  let filteredChats = chatActs.filter(c => {
+    if (selMember && c.member !== selMember) return false;
+    if (selMonth && !c.tanggal.startsWith(selMonth)) return false;
+    return true;
+  });
+
+  return { filteredMeetings, filteredAttendance, filteredChats };
+}
+
+function updateDashboard() {
+  const { filteredMeetings, filteredAttendance, filteredChats } = getFilteredData();
+
+  let totMeet = filteredMeetings.length;
+  let totDuration = filteredMeetings.reduce((sum, m) => sum + m.durasi, 0);
+
+  let totalHadir = 0;
+  let totalDiundang = 0;
+  let totalKeluarAwal = 0;
+
+  Object.keys(filteredAttendance).forEach(mem => {
+    filteredAttendance[mem].forEach(status => {
+      if (status === 'Hadir' || status === 'Keluar Awal') totalHadir++;
+      if (status !== 'Tidak Diundang') totalDiundang++;
+      if (status === 'Keluar Awal') totalKeluarAwal++;
+    });
+  });
+
+  let avgAtt = totalDiundang > 0 ? Math.round((totalHadir / totalDiundang) * 100) : 0;
+
+  let chatCounts = {};
+  members.forEach(m => chatCounts[m] = 0);
+  filteredChats.forEach(c => { if(chatCounts[c.member]!==undefined) chatCounts[c.member]++ });
+  
+  let sortedChats = Object.entries(chatCounts).sort((a,b) => b[1] - a[1]);
+  let mostActiveMember = sortedChats[0] && sortedChats[0][1] > 0 ? sortedChats[0][0] : "-";
+  let leastActiveMember = "Fazri Zamhari"; 
+
+  document.getElementById('kv1').textContent = totMeet;
+  document.getElementById('kd1').textContent = `Total durasi: ${totDuration} menit`;
+  
+  document.getElementById('kv2').textContent = `${avgAtt}%`;
+  document.getElementById('kd2').textContent = `Dari ${totalDiundang} total slot undangan`;
+
+  document.getElementById('kv3').textContent = `${totDuration}m`;
+  document.getElementById('kd3').textContent = `Rata-rata: ${totMeet > 0 ? Math.round(totDuration/totMeet) : 0} m/meeting`;
+
+  document.getElementById('kv4').textContent = mostActiveMember;
+  document.getElementById('kd4').textContent = `Dengan ${sortedChats[0] ? sortedChats[0][1] : 0} chat log aktivitas`;
+
+  document.getElementById('kv5').textContent = leastActiveMember;
+  document.getElementById('kd5').textContent = `Kehadiran & keaktifan terendah`;
+
+  document.getElementById('kv6').textContent = totalKeluarAwal;
+  document.getElementById('kd6').textContent = `Kasus terekam di log Teams`;
+
+  renderCharts(filteredMeetings, filteredAttendance, chatCounts);
+  renderAttTable();
+  renderChatTable();
+}
+
+function renderCharts(fMeetings, fAttendance, chatCounts) {
+  if(charts.attendance) charts.attendance.destroy();
+  let attLabels = Object.keys(fAttendance);
+  let attDataHadir = attLabels.map(mem => fAttendance[mem].filter(s => s==='Hadir'||s==='Keluar Awal').length);
+  let attDataAbsen = attLabels.map(mem => fAttendance[mem].filter(s => s==='Diundang').length);
+  
+  charts.attendance = new Chart(document.getElementById('chartAttendance'), {
+    type: 'bar',
+    data: {
+      labels: attLabels,
+      datasets: [
+        { label: 'Hadir/Keluar Awal', data: attDataHadir, backgroundColor: '#27AE60' },
+        { label: 'Absen (Mangkir)', data: attDataAbsen, backgroundColor: '#E74C3C' }
+      ]
+    },
+    options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+  });
+
+  if(charts.trend) charts.trend.destroy();
+  let trendLabels = fMeetings.map(m => `M-${m.no} (${m.tanggal.substring(5)})`);
+  let trendData = fMeetings.map((m) => {
+    let hadir = 0, diundang = 0;
+    Object.values(attendance).forEach(states => {
+      let s = states[m.no-1];
+      if(s === 'Hadir' || s === 'Keluar Awal') hadir++;
+      if(s && s !== 'Tidak Diundang') diundang++;
+    });
+    return diundang > 0 ? Math.round((hadir / diundang) * 100) : 0;
+  });
+
+  charts.trend = new Chart(document.getElementById('chartTrend'), {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [{ label: '% Kehadiran Circle', data: trendData, borderColor: '#3498DB', tension: 0.2, fill: false }]
+    },
+    options: { responsive: true, scales: { y: { min: 0, max: 100 } } }
+  });
+
+  if(charts.donut) charts.donut.destroy();
+  let statusCounts = { Hadir: 0, "Keluar Awal": 0, Diundang: 0, "Tidak Diundang": 0 };
+  Object.values(fAttendance).forEach(arr => arr.forEach(s => statusCounts[s]++));
+  
+  charts.donut = new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(statusCounts),
+      datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#27AE60', '#E67E22', '#BDC3C7', '#ECEF0F1'] }]
+    },
+    options: { responsive: true }
+  });
+
+  if(charts.monthly) charts.monthly.destroy();
+  let monthCounts = {};
+  fMeetings.forEach(m => { let mon = m.tanggal.substring(0,7); monthCounts[mon] = (monthCounts[mon]||0)+1; });
+  charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(monthCounts),
+      datasets: [{ label: 'Jumlah Meeting', data: Object.values(monthCounts), backgroundColor: '#9B59B6' }]
+    },
+    options: { responsive: true }
+  });
+
+  if(charts.chat) charts.chat.destroy();
+  charts.chat = new Chart(document.getElementById('chartChat'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(chatCounts),
+      datasets: [{ label: 'Jumlah Chat', data: Object.values(chatCounts), backgroundColor: '#1ABC9C' }]
+    },
+    options: { responsive: true, indexAxis: 'y' }
+  });
+}
+
+function renderAttTable() {
+  const { filteredMeetings, filteredAttendance } = getFilteredData();
+  const searchStr = document.getElementById('searchAtt').value.toLowerCase();
+  const wrap = document.getElementById('attTableWrap');
+
+  let html = '<table><thead><tr><th>Nama Member</th>';
+  filteredMeetings.forEach(m => {
+    let dateParts = m.tanggal.split('-');
+    let shortD = dateParts[2] + '/' + dateParts[1];
+    html += `<th title="${m.judul} (${m.tipe})">M-${m.no}<br><span style="font-size:9px;font-weight:normal">${shortD}</span></th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  Object.keys(filteredAttendance).forEach(mem => {
+    if(searchStr && !mem.toLowerCase().includes(searchStr)) return;
+    html += `<tr><td style="text-align:left;font-weight:600;padding-left:12px">${mem}</td>`;
+    filteredAttendance[mem].forEach(status => {
+      let badge = 'badge-tidak';
+      if(status=='Hadir') badge='badge-hadir';
+      if(status=='Keluar Awal') badge='badge-keluar';
+      if(status=='Diundang') badge='badge-diundang';
+      html += `<td><span class="${badge}">${status}</span></td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function renderChatTable() {
+  const { filteredChats } = getFilteredData();
+  const searchStr = document.getElementById('searchChat').value.toLowerCase();
+  const wrap = document.getElementById('chatTableWrap');
+
+  let html = '<table><thead><tr><th>Tanggal</th><th>Nama Member</th><th>Isi Chat Log Aktivitas</th><th>Kategori</th></tr></thead><tbody>';
+
+  filteredChats.forEach(c => {
+    if(searchStr && !c.member.toLowerCase().includes(searchStr) && !c.isi.toLowerCase().includes(searchStr) && !c.kategori.toLowerCase().includes(searchStr)) return;
+    
+    let catClass = 'cat-lainnya';
+    if(c.kategori==='Diskusi') catClass='cat-diskusi';
+    if(c.kategori==='Share Materi') catClass='cat-share';
+    if(c.kategori==='Assessment') catClass='cat-assessment';
+    if(c.kategori==='Izin') catClass='cat-izin';
+
+    html += `<tr>
+      <td>${c.tanggal}</td>
+      <td style="font-weight:600">${c.member}</td>
+      <td style="text-align:left;padding-left:12px">${c.isi}</td>
+      <td><span class="badge-cat ${catClass}">${c.kategori}</span></td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function snapData() {
+  let ml = meetings.map(m => `Meeting-${m.no} (${m.tanggal}, Durasi: ${m.durasi}m, Tipe: ${m.tipe}) - Judul: ${m.judul}`).join('\n');
+  let al = Object.keys(attendance).map(mem => `${mem}: [${attendance[mem].join(', ')}]`).join('\n');
+  let cl = chatActs.map(c => `[${c.tanggal}] ${c.member}: "${c.isi}" (${c.kategori})`).join('\n');
+  return { ml, al, cl };
+}
+
+// ==================== CALLING GEMINI DYNAMIC INSIGHT (Persis Gbr No 2) ====================
+async function doAI(){
+ var key=document.getElementById('geminiKey').value.trim();
+ var model=document.getElementById('geminiModel').value;
+ var focus=document.getElementById('aiFocus').value.trim();
+ var st=document.getElementById('aiSt');
+ var out=document.getElementById('aiOut');
+ var btn=document.getElementById('btnAI');
+ var grid=document.getElementById('insightGrid');
+ 
+ if(!key){st.className='ai-st err';st.textContent='❌ API key belum diisi!';alert('Masukkan API key dulu!');return}
+ 
+ var snap=snapData();
+ var prompt='Anda adalah analis dashboard QCC (Quality Control Circle) untuk Circle Leader di PT Toyota-Astra Motor. Buat insight dalam Bahasa Indonesia yang ringkas, profesional, langsung to the point, dan 100% berbasis data yang diberikan.\n\nFokus: '+focus+'\n\nFormat jawaban WAJIB menggunakan struktur penomoran berikut agar sistem bisa memisahkannya menjadi komponen card visual:\n[CARD_START|success] 📊 RINGKASAN SITUASI SAAT INI\n(Tulis ringkasan singkat situasi disini)\n[CARD_END]\n\n[CARD_START|success] 📈 3 TEMUAN UTAMA\n(Tulis 3 temuan utama berbasis angka disini)\n[CARD_END]\n\n[CARD_START|danger] ⚠️ RISIKO / PERHATIAN\n(Tulis analisis risiko atau member yang perlu perhatian disini)\n[CARD_END]\n\n[CARD_START|warn] 💡 REKOMENDASI AKSI MINGGUAN\n(Tulis 5 rekomendasi aksi konkret disini)\n[CARD_END]\n\n[CARD_START|purple] 📝 DRAFT NARASI PRESENTASI CIRCLE LEADER\n(Tulis draft presentasi maks 120 kata disini)\n[CARD_END]\n\nGunakan HANYA data berikut. Jangan mengarang data.\n\nDATA MEETING:\n'+snap.ml+'\n\nDATA ABSENSI:\n'+snap.al+'\n\nDATA AKTIVITAS CHAT:\n'+snap.cl;
+
+ st.className='ai-st run';st.textContent='⏳ Menghubungi Gemini AI...';
+ btn.disabled=true;btn.textContent='⏳ Loading...';
+ grid.innerHTML=''; 
+ 
+ try{
+  var url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent';
+  var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+  var data=await res.json();
+  
+  if(!res.ok){var em=(data&&data.error)?data.error.message:'HTTP '+res.status;throw new Error(em)}
+  var cand=(data.candidates||[])[0];
+  if(!cand||!cand.content)throw new Error('Respons kosong. Cek API key & model.');
+  var parts=cand.content.parts||[];var textArr=[];for(var i=0;i<parts.length;i++){textArr.push(parts[i].text||'')}
+  var text = textArr.join('\n').trim();
+  if(!text)throw new Error('Teks respons kosong dari Gemini.');
+  
+  // === PARSING ALGORITMA PENATAAN CARD (Sesuai Layout Gambar 2) ===
+  var cardRegex = /\[CARD_START\|(.*?)\]([\s\S]*?)\[CARD_END\]/g;
+  var match;
+  var htmlCards = '';
+  var hasCards = false;
+
+  while ((match = cardRegex.exec(text)) !== null) {
+    hasCards = true;
+    var borderClass = match[1].trim(); 
+    var content = match[2].trim().split('\n');
+    var title = content[0]; 
+    var body = content.slice(1).join('<br>'); 
+    
+    htmlCards += '<div class="insight-card ' + borderClass + '"><h4>' + title + '</h4><p>' + body + '</p></div>';
+  }
+
+  // Jaga-jaga apabila output AI meleset dari aturan regex tags
+  if (!hasCards) {
+    var sections = text.split(/\n(?=\d+\.\s|[A-Z]{3,})/);
+    sections.forEach(function(sec, idx) {
+      if(!sec.trim()) return;
+      var lines = sec.trim().split('\n');
+      var title = lines[0].replace(/^\d+\.\s*/, '');
+      var body = lines.slice(1).join('<br>');
+      var colors = ['success', 'warn', 'danger', 'purple'];
+      var borderClass = colors[idx % colors.length];
+      htmlCards += '<div class="insight-card ' + borderClass + '"><h4>' + title + '</h4><p>' + body + '</p></div>';
+    });
+  }
+
+  grid.innerHTML = htmlCards;
+  st.className='ai-st ok';st.textContent='✅ Insight berhasil dibuat secara dinamis! (model: '+model+')';
+ }catch(err){
+  console.error('AI Error:',err);
+  st.className='ai-st err';st.textContent='❌ Error: '+err.message;
+  grid.innerHTML='<div class="insight-card danger"><h4>❌ Gagal Generate Insight</h4><p>'+err.message+'</p></div>';
+  alert('AI Error: '+err.message);
+ }finally{btn.disabled=false;btn.textContent='✨ Generate AI Insight'}
+}
+
+// Fungsi renderInsights dikosongkan agar tidak bertabrakan dengan data dinamis Gemini
+function renderInsights(fm,fi,avgAtt,best,worst,totMeet,totKA){}
+
+// ==================== DETEKSI & PARSING REAL-TIME UPLOAD EXCEL ====================
+function setupUploadZone() {
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if(e.dataTransfer.files.length) handleUploadedFile(e.dataTransfer.files[0]);
+  });
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    if(e.target.files.length) handleUploadedFile(e.target.files[0]);
+  });
+}
+
+function handleUploadedFile(file) {
+  if (!file) return;
+  document.getElementById('uploadMsg').style.color = '#2980B9';
+  document.getElementById('uploadMsg').textContent = '⏳ Membaca file Excel...';
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+
+      function cleanStr(v) { return v == null ? '' : String(v).trim(); }
+      function toNum(v) { 
+        var n = parseFloat(String(v).replace(',','.').replace(/[^0-9.\-]/g,'')); 
+        return isFinite(n) ? n : 0; 
+      }
+      function getSheetRows(workbook, keyword) {
+        for (var i = 0; i < workbook.SheetNames.length; i++) {
+          if (workbook.SheetNames[i].toLowerCase().indexOf(keyword.toLowerCase()) >= 0) {
+            return XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[i]], { header: 1, defval: '' });
+          }
+        }
+        return null;
+      }
+      function normStatus(v) {
+        var s = String(v || '').trim().toLowerCase();
+        if (!s || s === '-') return 'Tidak Diundang';
+        if (s.indexOf('keluar') >= 0) return 'Keluar Awal';
+        if (s.indexOf('hadir') >= 0 || s.indexOf('✓') >= 0) return 'Hadir';
+        if (s.indexOf('diundang') >= 0 || s.indexOf('?') >= 0) return 'Diundang';
+        return 'Tidak Diundang';
+      }
+      function normKategori(v) {
+        var s = String(v || '').trim().toLowerCase();
+        if (s.indexOf('share') >= 0) return 'Share Materi';
+        if (s.indexOf('assessment') >= 0) return 'Assessment';
+        if (s.indexOf('izin') >= 0) return 'Izin';
+        if (s.indexOf('diskusi') >= 0) return 'Diskusi';
+        return 'Lainnya';
+      }
+
+      // 1. Parsing Sheet "Daftar Meeting"
+      var mRows = getSheetRows(wb, 'daftar meeting');
+      if (!mRows) throw new Error('Sheet "Daftar Meeting" tidak ditemukan!');
+      var mHeaderIdx = -1;
+      for (var i = 0; i < mRows.length; i++) {
+        for (var j = 0; j < (mRows[i] || []).length; j++) {
+          if (cleanStr(mRows[i][j]).toLowerCase().indexOf('judul meeting') >= 0) { mHeaderIdx = i; break; }
+        }
+        if (mHeaderIdx >= 0) break;
+      }
+      if (mHeaderIdx < 0) throw new Error('Header "Judul Meeting" tidak ditemukan!');
+      
+      var newMeetings = [];
+      for (var i = mHeaderIdx + 1; i < mRows.length; i++) {
+        var r = mRows[i];
+        if (!cleanStr(r[0]) || isNaN(Number(r[0]))) continue;
+        newMeetings.push({
+          no: +r[0] || 0,
+          tanggal: cleanStr(r[1]),
+          hari: cleanStr(r[2]),
+          judul: cleanStr(r[3]),
+          organizer: cleanStr(r[4]) || '-',
+          tipe: cleanStr(r[5]),
+          lokasi: cleanStr(r[6]),
+          durasi: toNum(r[7])
+        });
+      }
+      if (!newMeetings.length) throw new Error('Data di sheet Daftar Meeting kosong!');
+
+      // 2. Parsing Sheet "Absensi"
+      var aRows = getSheetRows(wb, 'absensi');
+      if (!aRows) throw new Error('Sheet "Absensi" tidak ditemukan!');
+      var aHeaderIdx = -1;
+      for (var i = 0; i < aRows.length; i++) {
+        for (var j = 0; j < (aRows[i] || []).length; j++) {
+          if (cleanStr(aRows[i][j]).toLowerCase().indexOf('nama member') >= 0) { aHeaderIdx = i; break; }
+        }
+        if (aHeaderIdx >= 0) break;
+      }
+      if (aHeaderIdx < 0) throw new Error('Header "Nama Member" tidak ditemukan!');
+      
+      var newMembers = [];
+      var newAttendance = {};
+      for (var i = aHeaderIdx + 1; i < aRows.length; i++) {
+        var r = aRows[i];
+        if (!cleanStr(r[0]) || isNaN(Number(r[0])) || !cleanStr(r[1])) continue;
+        var nm = cleanStr(r[1]);
+        newMembers.push(nm);
+        newAttendance[nm] = [];
+        for (var j = 0; j < newMeetings.length; j++) {
+          newAttendance[nm].push(normStatus(r[2 + j]));
+        }
+      }
+      if (!newMembers.length) throw new Error('Data member kosong!');
+
+      // 3. Parsing Sheet "Aktivitas Chat"
+      var cRows = getSheetRows(wb, 'aktivitas chat');
+      var newChats = [];
+      if (cRows) {
+        var cHeaderIdx = -1;
+        for (var i = 0; i < cRows.length; i++) {
+          for (var j = 0; j < (cRows[i] || []).length; j++) {
+            if (cleanStr(cRows[i][j]).toLowerCase().indexOf('isi chat') >= 0) { cHeaderIdx = i; break; }
+          }
+          if (cHeaderIdx >= 0) break;
+        }
+        if (cHeaderIdx >= 0) {
+          for (var i = cHeaderIdx + 1; i < cRows.length; i++) {
+            var r = cRows[i];
+            if (!cleanStr(r[0]) || isNaN(Number(r[0]))) continue;
+            var obj = {
+              tanggal: cleanStr(r[1]),
+              meeting: cleanStr(r[2]),
+              member: cleanStr(r[3]),
+              isi: cleanStr(r[4]),
+              kategori: normKategori(r[5])
+            };
+            if (obj.member || obj.isi) newChats.push(obj);
+          }
+        }
+      }
+
+      // --- DISTRIBUSI UPDATE KE DATA GLOBAL ---
+      meetings = newMeetings;
+      members = newMembers;
+      attendance = newAttendance;
+      chatActs = newChats;
+
+      // Re-populate filter opsi sesuai database baru
+      const fMem = document.getElementById('fMember');
+      fMem.innerHTML = '<option value="">Semua Member</option>';
+      members.forEach(m => fMem.add(new Option(m, m)));
+      
+      const fMon = document.getElementById('fMonth');
+      fMon.innerHTML = '<option value="">Semua Bulan</option>';
+      let uniqueMonths = [...new Set(meetings.map(m => m.tanggal.substring(0, 7)))].sort();
+      uniqueMonths.forEach(mon => fMon.add(new Option(mon, mon)));
+
+      // Trigger Render Pembaruan Grafik
+      updateDashboard();
+
+      document.getElementById('uploadMsg').style.color = '#27AE60';
+      document.getElementById('uploadMsg').innerHTML = `✅ <b>File "${file.name}" Berhasil Di-import!</b><br>Tercatat: ${meetings.length} Meeting, ${members.length} Member, dan ${chatActs.length} Log Aktivitas Chat diperbarui.`;
+      
+    } catch(err) {
+      document.getElementById('uploadMsg').style.color = '#E74C3C';
+      document.getElementById('uploadMsg').textContent = `❌ Gagal memproses data: ${err.message}`;
+      console.error(err);
+      alert('Import gagal: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function exportCSV() {
+  let csv = 'Nama Member,Status Kehadiran\n';
+  Object.keys(attendance).forEach(m => { csv += `${m},"${attendance[m].join(',')}"\n`; });
+  let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", "QCC_Kurawa_Attendance_Export.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// ============= 3D ANIMATIONS =============
+function initAnimations(){
+ var cards=document.querySelectorAll('.kpi-card');
+ for(var i=0;i<cards.length;i++){cards[i].classList.add('anim-scale');cards[i].style.animationDelay=(i*0.1)+'s'}
+ var charts=document.querySelectorAll('.chart-box');
+ for(var i=0;i<charts.length;i++){charts[i].classList.add('anim-up');charts[i].style.animationDelay=(0.3+i*0.15)+'s'}
+ var sections=document.querySelectorAll('.section');
+ for(var i=0;i<sections.length;i++){sections[i].classList.add('scroll-hidden')}
+ var fb=document.querySelector('.filter-bar');
+ if(fb){fb.classList.add('anim-left');fb.style.animationDelay='0.2s'}
+ var ab=document.querySelector('.ai-bar');
+ if(ab){ab.classList.add('anim-right');ab.style.animationDelay='0.15s'}
+ var uz=document.querySelector('.upload-zone');
+ if(uz){uz.classList.add('anim-up');uz.style.animationDelay='0.1s'}
+ if('IntersectionObserver' in window){
+  var observer=new IntersectionObserver(function(entries){
+   entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('scroll-visible');observer.unobserve(entry.target)}});
+  },{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+  for(var i=0;i<sections.length;i++){observer.observe(sections[i])}
+ }else{for(var i=0;i<sections.length;i++){sections[i].classList.add('scroll-visible')}}
+}
+function animateCounter(el,target,suffix){
+ suffix=suffix||'';var dur=900;var startTime=null;
+ function step(ts){if(!startTime)startTime=ts;var p=Math.min((ts-startTime)/dur,1);var e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e)+suffix;if(p<1)requestAnimationFrame(step)}
+ requestAnimationFrame(step);
+}
+function animateCounters(){
+ var pairs=[['kv1',''],['kv2','%'],['kv6','']];
+ pairs.forEach(function(pair){
+  var el=document.getElementById(pair[0]);if(!el)return;
+  var n=parseFloat(el.textContent.replace(/[^0-9.]/g,''));
+  if(isNaN(n)||n===0)return;animateCounter(el,n,pair[1]);
+ });
+}
+document.addEventListener('mousemove',function(e){
+ var cards=document.querySelectorAll('.kpi-card');
+ for(var i=0;i<cards.length;i++){
+  var card=cards[i];var rect=card.getBoundingClientRect();
+  var cx=rect.left+rect.width/2;var cy=rect.top+rect.height/2;
+  var dx=(e.clientX-cx)/rect.width;var dy=(e.clientY-cy)/rect.height;
+  if(Math.sqrt(dx*dx+dy*dy)<1.5){card.style.transform='rotateY('+(dx*8)+'deg) rotateX('+(-dy*8)+'deg) translateZ(5px)'}
+  else{card.style.transform=''}
+ }
+});
+setTimeout(initAnimations,100);
+setTimeout(animateCounters,800);
+
+</script>
+</body>
+</html>
