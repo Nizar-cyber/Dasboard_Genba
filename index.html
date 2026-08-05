@@ -38,7 +38,7 @@ body {
 
 /* ========== SIDEBAR ========== */
 .sidebar {
-  width: 250px; min-width: 250px;
+  width: 190px; min-width: 190px;
   background: linear-gradient(180deg, var(--red) 0%, var(--red-dark) 40%, var(--dark) 100%);
   color: #fff;
   display: flex; flex-direction: column;
@@ -47,30 +47,30 @@ body {
   z-index: 100;
 }
 .sidebar-logo {
-  display: flex; align-items: center; gap: 12px;
-  padding: 22px 20px 18px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 18px 14px 14px;
   border-bottom: 1px solid rgba(255,255,255,0.15);
 }
 .sidebar-logo .icon {
-  width: 44px; height: 44px; background: #fff; border-radius: 50%;
+  width: 36px; height: 36px; background: #fff; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.5em; font-weight: 900; color: var(--red);
+  font-size: 1.25em; font-weight: 900; color: var(--red);
   box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;
 }
-.sidebar-logo .brand { font-size: 1.25em; font-weight: 800; letter-spacing: 1px; line-height: 1.1; }
+.sidebar-logo .brand { font-size: 1.02em; font-weight: 800; letter-spacing: 0.5px; line-height: 1.1; }
 .sidebar-logo .brand span { color: #FFD700; }
 .sidebar-sub {
-  padding: 14px 20px 8px; font-size: 0.72em; font-weight: 700;
-  letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.6;
+  padding: 12px 14px 6px; font-size: 0.65em; font-weight: 700;
+  letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.6;
 }
 /* ========== NAVIGATION (vertical) ========== */
-.nav-bar { display: flex; flex-direction: column; padding: 0 12px; gap: 4px; }
+.nav-bar { display: flex; flex-direction: column; padding: 0 8px; gap: 4px; }
 .nav-tab {
-  padding: 13px 16px; cursor: pointer; color: rgba(255,255,255,0.72);
-  font-weight: 600; font-size: 0.95em; border-radius: 8px;
+  padding: 11px 12px; cursor: pointer; color: rgba(255,255,255,0.72);
+  font-weight: 600; font-size: 0.88em; border-radius: 8px;
   border-left: 4px solid transparent;
   transition: var(--transition); user-select: none;
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 7px; white-space: nowrap;
 }
 .nav-tab:hover { color: #fff; background: rgba(255,255,255,0.10); }
 .nav-tab.active {
@@ -450,9 +450,15 @@ input[type="range"]::-webkit-slider-thumb {
 <!-- ==================== PAGE: MATERI ==================== -->
 <div class="page" id="pageMateri">
   <div class="card">
-    <div class="card-title">Materi Genba per Bulan — Tahun 2026</div>
+    <div class="card-title" id="materiCardTitle">Materi Genba per Bulan — Tahun 2026</div>
     <div class="toolbar">
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.85em;font-weight:600;color:var(--dark);">
+        📅 Tahun:
+        <select id="yearSelector" onchange="switchYear(this.value)" style="padding:6px 10px;border-radius:6px;border:1px solid #ccc;font-weight:700;"></select>
+      </label>
+      <button class="btn btn-outline" onclick="addNextYear()">➕ Tahun Baru</button>
       <button class="btn btn-red" onclick="addMateriRow()">＋ Tambah Baris</button>
+      <button class="btn btn-dark" onclick="saveToGoogleSheets(this)">☁ Simpan ke Google Sheets</button>
       <button class="btn btn-dark" onclick="exportSummary()">📄 Export Summary</button>
       <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
       <button class="btn btn-grey" onclick="resetAllData()">🔄 Reset Data</button>
@@ -731,8 +737,41 @@ function updateIdbStatus() {
 // ============================
 // STATE MANAGEMENT
 // ============================
+// ============================
+// MULTI-YEAR SUPPORT
+// ============================
+const BASE_YEAR = 2026; // tahun dengan data default bawaan
+let activeYear = BASE_YEAR;
+
+// Migrasi key lama "genba_materi" -> "genba_materi_2026" (sekali jalan)
+(function migrateMateriKey() {
+  var old = localStorage.getItem('genba_materi');
+  if (old && !localStorage.getItem('genba_materi_' + BASE_YEAR)) {
+    localStorage.setItem('genba_materi_' + BASE_YEAR, old);
+  }
+})();
+
+// Daftar tahun yang tersedia (disimpan agar bisa nambah 2027, 2028, dst)
+function getYearList() {
+  var stored = JSON.parse(localStorage.getItem('genba_years') || 'null');
+  if (!stored || !stored.length) stored = [BASE_YEAR];
+  if (stored.indexOf(BASE_YEAR) === -1) stored.push(BASE_YEAR);
+  stored.sort(function(a,b){ return a-b; });
+  return stored;
+}
+function saveYearList(list) { localStorage.setItem('genba_years', JSON.stringify(list)); }
+
+// Load data materi untuk tahun tertentu
+function loadMateriForYear(year) {
+  var raw = localStorage.getItem('genba_materi_' + year);
+  if (raw) { try { return JSON.parse(raw); } catch(e){} }
+  // tahun BASE punya data default, tahun baru mulai kosong
+  if (year === BASE_YEAR) return getDefaultMateri();
+  var empty = {}; for (var i=0;i<12;i++) empty[i]=[]; return empty;
+}
+
 let ganttTasks = JSON.parse(localStorage.getItem('genba_gantt')) || getDefaultGantt();
-let materiData = JSON.parse(localStorage.getItem('genba_materi')) || getDefaultMateri();
+let materiData = loadMateriForYear(activeYear);
 let activeMonth = 4;
 let ganttEditIdx = -1;
 
@@ -746,7 +785,7 @@ function persistMateri() {
         clean[k].forEach(function(r) { delete r.pdfData; });
       }
     }
-    localStorage.setItem('genba_materi', JSON.stringify(clean));
+    localStorage.setItem('genba_materi_' + activeYear, JSON.stringify(clean));
   } catch(e) {
     if (e.name === 'QuotaExceededError' || e.code === 22) {
       alert('\u26A0\uFE0F localStorage penuh! Data PDF sudah aman di IndexedDB. Coba hapus data lama.');
@@ -754,6 +793,41 @@ function persistMateri() {
       console.error('persistMateri error:', e);
     }
   }
+}
+
+// Pindah tahun aktif
+function switchYear(year) {
+  persistMateri();                 // simpan tahun sekarang dulu
+  activeYear = parseInt(year);
+  materiData = loadMateriForYear(activeYear);
+  renderYearSelector();
+  renderMonthTabs();
+  renderMateriTable();
+  renderMateriTitle();
+}
+// Tambah tahun berikutnya (2027, 2028, dst)
+function addNextYear() {
+  var list = getYearList();
+  var next = Math.max.apply(null, list) + 1;
+  list.push(next); saveYearList(list);
+  switchYear(next);
+  alert('\u2705 Tahun ' + next + ' ditambahkan. Silakan isi materi untuk tahun ' + next + '.');
+}
+// Render dropdown pemilih tahun
+function renderYearSelector() {
+  var el = document.getElementById('yearSelector');
+  if (!el) return;
+  var list = getYearList();
+  var html = '';
+  list.forEach(function(y){
+    html += '<option value="'+y+'"'+(y===activeYear?' selected':'')+'>'+y+'</option>';
+  });
+  el.innerHTML = html;
+}
+// Update judul-judul yang menampilkan tahun
+function renderMateriTitle() {
+  var t = document.getElementById('materiCardTitle');
+  if (t) t.textContent = 'Materi Genba per Bulan — Tahun ' + activeYear;
 }
 
 // ============================
@@ -1002,7 +1076,7 @@ function switchMonth(idx) {
 function renderMateriTable() {
   let rows = materiData[activeMonth] || [];
   let html = '<h3 style="margin-bottom:12px; color:var(--dark); font-size:1.05em;">';
-  html += '\u{1F4DD} Materi Genba <span style="color:var(--red);">' + MONTHS[activeMonth] + ' 2026</span></h3>';
+  html += '\u{1F4DD} Materi Genba <span style="color:var(--red);">' + MONTHS[activeMonth] + ' ' + activeYear + '</span></h3>';
   html += '<div style="overflow-x:auto;"><table>';
   html += '<thead><tr>';
   html += '<th style="width:40px">No</th>';
@@ -1246,18 +1320,18 @@ function exportSummary() {
 // RESET DATA (termasuk clear IndexedDB)
 // ============================
 function resetAllData() {
-  if (confirm('\u26A0\uFE0F Reset semua data ke default?\nSemua perubahan & file PDF akan hilang!')) {
+  if (confirm('\u26A0\uFE0F Reset data tahun ' + activeYear + ' ke default?\nPerubahan & file PDF tahun ini akan hilang!')) {
     clearAllPdfsIDB().then(function() {
       console.log('IndexedDB PDFs cleared.');
     }).catch(function(){});
     ganttTasks = getDefaultGantt();
-    materiData = getDefaultMateri();
+    materiData = (activeYear === BASE_YEAR) ? getDefaultMateri() : (function(){var e={};for(var i=0;i<12;i++)e[i]=[];return e;})();
     persistGantt();
     persistMateri();
     activeMonth = 4;
     renderAll();
     updateIdbStatus();
-    alert('\u2705 Data berhasil di-reset ke default.');
+    alert('\u2705 Data tahun ' + activeYear + ' berhasil di-reset.');
   }
 }
 // ============================
@@ -1374,9 +1448,113 @@ function renderSummary() {
 // ============================
 function renderAll() {
   renderGanttChart();
+  renderYearSelector();
+  renderMateriTitle();
   renderMonthTabs();
   renderMateriTable();
 }
+
+// ============================================================
+// SIMPAN MATERI (Judul + PIC/siapa + dll) KE GOOGLE SHEETS
+// Semua tahun digabung dalam 1 spreadsheet di Google Drive.
+// Pakai scope drive.file yang sudah ada (CSV -> Google Sheet).
+// ============================================================
+function buildMateriCSV() {
+  // Header kolom
+  var rows = [['Tahun','Bulan','Area','Judul Materi','PIC (Siapa)','Progress (%)','Remark']];
+  var years = getYearList();
+  years.forEach(function(y) {
+    var data = (y === activeYear) ? materiData : loadMateriForYear(y);
+    for (var m = 0; m < 12; m++) {
+      var list = data[m] || [];
+      list.forEach(function(r) {
+        // hanya baris yang ada judul-nya
+        if (!r.judul || !r.judul.trim() || r.judul.trim() === '-') return;
+        rows.push([ y, MONTHS[m], r.area || '', r.judul || '', r.pic || '', (r.progress || 0), r.remark || '' ]);
+      });
+    }
+  });
+  // Encode ke CSV (escape koma, kutip, newline)
+  return rows.map(function(row) {
+    return row.map(function(cell) {
+      var s = String(cell == null ? '' : cell);
+      if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }).join(',');
+  }).join('\r\n');
+}
+
+function saveToGoogleSheets(btnEl) {
+  persistMateri(); // pastikan data terbaru tersimpan dulu
+  var csv = buildMateriCSV();
+  if (csv.split('\r\n').length <= 1) { alert('Belum ada materi (judul) untuk disimpan.'); return; }
+
+  gdEnsureToken(function() {
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ Menyimpan...'; }
+    var sheetId = localStorage.getItem('genba_sheet_id') || '';
+    var metadata = {
+      name: 'Genba Materi Database',
+      mimeType: 'application/vnd.google-apps.spreadsheet' // konversi CSV -> Google Sheet
+    };
+    if (!sheetId && GD_FOLDER_ID) metadata.parents = [GD_FOLDER_ID];
+
+    var csvBlob = new Blob([csv], { type: 'text/csv' });
+
+    function done(data) {
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '☁ Simpan ke Google Sheets'; }
+      if (data && data.id) {
+        localStorage.setItem('genba_sheet_id', data.id);
+        var link = 'https://docs.google.com/spreadsheets/d/' + data.id + '/edit';
+        if (confirm('✅ Materi berhasil disimpan ke Google Sheets.\n\nBuka spreadsheet sekarang?')) {
+          window.open(link, '_blank');
+        }
+      } else {
+        console.error('Sheets save gagal:', data);
+        if (data && data.error && (data.error.code === 401 || data.error.code === 403)) {
+          gdAccessToken = null;
+          alert('Sesi Google habis / izin ditolak. Klik tombol lagi untuk login ulang.');
+        } else {
+          alert('❌ Gagal simpan: ' + (data && data.error ? data.error.message : 'unknown'));
+        }
+      }
+    }
+
+    if (sheetId) {
+      // UPDATE isi spreadsheet yang sudah ada (timpa dengan CSV baru)
+      fetch('https://www.googleapis.com/upload/drive/v3/files/' + sheetId + '?uploadType=media&fields=id', {
+        method: 'PATCH',
+        headers: new Headers({ 'Authorization': 'Bearer ' + gdAccessToken, 'Content-Type': 'text/csv' }),
+        body: csvBlob
+      })
+      .then(function(res){ return res.json(); })
+      .then(function(data){
+        if (data && data.id) { done(data); }
+        else { // mungkin file terhapus -> buat baru
+          localStorage.removeItem('genba_sheet_id');
+          createNewSheet();
+        }
+      })
+      .catch(function(err){ if(btnEl){btnEl.disabled=false;btnEl.textContent='☁ Simpan ke Google Sheets';} alert('❌ Gagal: '+err.message); });
+    } else {
+      createNewSheet();
+    }
+
+    function createNewSheet() {
+      var form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', csvBlob);
+      fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', {
+        method: 'POST',
+        headers: new Headers({ 'Authorization': 'Bearer ' + gdAccessToken }),
+        body: form
+      })
+      .then(function(res){ return res.json(); })
+      .then(done)
+      .catch(function(err){ if(btnEl){btnEl.disabled=false;btnEl.textContent='☁ Simpan ke Google Sheets';} alert('❌ Gagal: '+err.message); });
+    }
+  });
+}
+
 // ============================
 // INITIALIZE
 // ============================
