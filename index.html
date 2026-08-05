@@ -33,49 +33,67 @@ body {
   min-height: 100vh;
 }
 
-/* ========== HEADER ========== */
-.header {
-  background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 60%, var(--dark) 100%);
-  color: #fff;
-  padding: 20px 36px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  box-shadow: 0 4px 20px rgba(235,10,30,0.25);
-  flex-wrap: wrap;
-}
-.header-logo {
-  display: flex; align-items: center; gap: 12px;
-}
-.header-logo .icon {
-  width: 48px; height: 48px; background: #fff; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6em; font-weight: 900; color: var(--red);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.header-logo .brand { font-size: 1.5em; font-weight: 800; letter-spacing: 2px; }
-.header-logo .brand span { color: #FFD700; }
-.header-title {
-  flex: 1; text-align: center;
-  font-size: 1.15em; font-weight: 600; opacity: 0.95;
-}
-.header-right { font-size: 0.92em; opacity: 0.85; }
+/* ========== APP LAYOUT (SIDEBAR) ========== */
+.app { display: flex; min-height: 100vh; }
 
-/* ========== NAVIGATION TABS ========== */
-.nav-bar {
-  display: flex; background: var(--dark); padding: 0 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  position: sticky; top: 0; z-index: 100;
+/* ========== SIDEBAR ========== */
+.sidebar {
+  width: 250px; min-width: 250px;
+  background: linear-gradient(180deg, var(--red) 0%, var(--red-dark) 40%, var(--dark) 100%);
+  color: #fff;
+  display: flex; flex-direction: column;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.18);
+  position: sticky; top: 0; height: 100vh;
+  z-index: 100;
 }
+.sidebar-logo {
+  display: flex; align-items: center; gap: 12px;
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+.sidebar-logo .icon {
+  width: 44px; height: 44px; background: #fff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5em; font-weight: 900; color: var(--red);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); flex-shrink: 0;
+}
+.sidebar-logo .brand { font-size: 1.25em; font-weight: 800; letter-spacing: 1px; line-height: 1.1; }
+.sidebar-logo .brand span { color: #FFD700; }
+.sidebar-sub {
+  padding: 14px 20px 8px; font-size: 0.72em; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.6;
+}
+/* ========== NAVIGATION (vertical) ========== */
+.nav-bar { display: flex; flex-direction: column; padding: 0 12px; gap: 4px; }
 .nav-tab {
-  padding: 14px 30px; cursor: pointer; color: #aaa;
-  font-weight: 600; font-size: 0.98em;
-  border-bottom: 3px solid transparent;
-  transition: var(--transition);
-  user-select: none;
+  padding: 13px 16px; cursor: pointer; color: rgba(255,255,255,0.72);
+  font-weight: 600; font-size: 0.95em; border-radius: 8px;
+  border-left: 4px solid transparent;
+  transition: var(--transition); user-select: none;
+  display: flex; align-items: center; gap: 8px;
 }
-.nav-tab:hover { color: #fff; background: rgba(255,255,255,0.06); }
-.nav-tab.active { color: #fff; border-bottom-color: var(--red); background: rgba(255,255,255,0.08); }
+.nav-tab:hover { color: #fff; background: rgba(255,255,255,0.10); }
+.nav-tab.active {
+  color: #fff; background: rgba(255,255,255,0.16);
+  border-left-color: #FFD700;
+}
+.sidebar-foot {
+  margin-top: auto; padding: 16px 20px;
+  font-size: 0.78em; opacity: 0.7;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+/* ========== MAIN CONTENT ========== */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  background: var(--white);
+  padding: 16px 32px;
+  border-bottom: 1px solid #e2e2e2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: sticky; top: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar .topbar-title { font-size: 1.15em; font-weight: 700; color: var(--dark); }
+.topbar .topbar-right { font-size: 0.9em; color: var(--grey); font-weight: 600; }
 
 /* ========== SECTIONS ========== */
 .page { display: none; padding: 28px 32px; animation: fadeIn 0.3s ease; }
@@ -282,20 +300,33 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* ========== PRINT ========== */
 @media print {
-  .nav-bar, .toolbar, .btn, .footer, input[type="range"] { display: none !important; }
+  .sidebar, .topbar, .toolbar, .btn, .footer, input[type="range"] { display: none !important; }
+  .app { display: block; }
+  .main { display: block; }
   .page { display: block !important; padding: 10px; }
   .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
-  .header { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   table th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .pbar-fill { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-  .header { padding: 14px 16px; gap: 10px; }
-  .header-logo .brand { font-size: 1.2em; }
-  .header-title { font-size: 0.95em; }
-  .nav-tab { padding: 10px 16px; font-size: 0.88em; }
+  .app { flex-direction: column; }
+  .sidebar {
+    width: 100%; min-width: 0; height: auto; position: sticky; top: 0;
+    flex-direction: row; flex-wrap: wrap; align-items: center;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 60%, var(--dark) 100%);
+  }
+  .sidebar-logo { border-bottom: none; padding: 12px 16px; flex: 1; }
+  .sidebar-logo .brand { font-size: 1.1em; }
+  .sidebar-sub { display: none; }
+  .nav-bar { flex-direction: row; flex-wrap: wrap; width: 100%; padding: 0 8px 8px; gap: 6px; }
+  .nav-tab { padding: 9px 14px; font-size: 0.85em; border-left: none; border-bottom: 3px solid transparent; flex: 1; justify-content: center; }
+  .nav-tab.active { border-left: none; border-bottom-color: #FFD700; }
+  .sidebar-foot { display: none; }
+  .topbar { padding: 12px 16px; }
+  .topbar .topbar-title { font-size: 0.95em; }
+  .topbar .topbar-right { display: none; }
   .page { padding: 14px 10px; }
   .card { padding: 14px; }
   .gantt-label { width: 120px; min-width: 120px; font-size: 0.8em; }
@@ -358,21 +389,30 @@ input[type="range"]::-webkit-slider-thumb {
 </head>
 <body>
 
-<!-- ==================== HEADER ==================== -->
-<div class="header">
-  <div class="header-logo">
+<div class="app">
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
     <div class="icon">T</div>
     <div class="brand">TOYOTA <span>GENBA</span></div>
   </div>
-  <div class="header-title">Dashboard Genba Management CCY 2026</div>
-  <div class="header-right">Toyota-Astra Motor</div>
-</div>
+  <div class="sidebar-sub">Menu Navigasi</div>
+  <nav class="nav-bar">
+    <div class="nav-tab active" onclick="switchPage('gantt')" id="navGantt">📊 Timeline & Gantt</div>
+    <div class="nav-tab" onclick="switchPage('materi')" id="navMateri">📋 Materi Genba</div>
+    <div class="nav-tab" onclick="switchPage('summary')" id="navSummary">📈 Summary</div>
+  </nav>
+  <div class="sidebar-foot">Toyota-Astra Motor<br>Genba Management CCY 2026</div>
+</aside>
 
-<!-- ==================== NAVIGATION ==================== -->
-<div class="nav-bar">
-  <div class="nav-tab active" onclick="switchPage('gantt')" id="navGantt">📊 Timeline & Gantt</div>
-  <div class="nav-tab" onclick="switchPage('materi')" id="navMateri">📋 Materi Genba</div>
-  <div class="nav-tab" onclick="switchPage('summary')" id="navSummary">📈 Summary</div>
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main">
+
+<!-- topbar -->
+<div class="topbar">
+  <div class="topbar-title">Dashboard Genba Management CCY 2026</div>
+  <div class="topbar-right">Toyota-Astra Motor</div>
 </div>
 
 <!-- ==================== PAGE: GANTT ==================== -->
@@ -459,6 +499,9 @@ input[type="range"]::-webkit-slider-thumb {
 <div class="footer">
   &copy; 2026 Toyota-Astra Motor — Dashboard Genba Management CCY. All rights reserved.
 </div>
+
+</div><!-- /.main -->
+</div><!-- /.app -->
 
 <!-- ==================== JAVASCRIPT ==================== -->
 <script>
