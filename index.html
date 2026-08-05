@@ -377,13 +377,13 @@ input[type="range"]::-webkit-slider-thumb {
 .bar-label-bottom { font-size: 0.85em; font-weight: 700; margin-top: 10px; color: var(--grey); text-align: center; }
 .bar-detail { font-size: 0.72em; color: var(--grey); margin-top: 2px; text-align: center; }
 
-/* Google Drive button */
+/* Tombol simpan ke OneDrive */
 .pdf-drive-btn { display:inline-flex; align-items:center; gap:3px; background:#E3F2FD; color:#0066B1; border:none; padding:3px 7px; border-radius:4px; font-size:0.74em; font-weight:700; cursor:pointer; margin-top:2px; }
 .pdf-drive-btn:hover { background:#BBDEFB; }
 .pdf-drive-btn:disabled { opacity:0.5; cursor:not-allowed; }
 .pdf-drive-btn.done { background:#E8F5E9; color:#2E7D32; }
 </style>
-<!-- ===== Google API scripts (untuk fitur Simpan ke Google Drive) ===== -->
+<!-- ===== Script layanan penyimpanan (untuk fitur Simpan ke OneDrive) ===== -->
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </head>
@@ -458,7 +458,7 @@ input[type="range"]::-webkit-slider-thumb {
       </label>
       <button class="btn btn-outline" onclick="addNextYear()">➕ Tahun Baru</button>
       <button class="btn btn-red" onclick="addMateriRow()">＋ Tambah Baris</button>
-      <button class="btn btn-dark" onclick="saveToGoogleSheets(this)">☁ Simpan ke Google Sheets</button>
+      <button class="btn btn-dark" onclick="saveToGoogleSheets(this)">☁ Simpan di Excel & OneDrive</button>
       <button class="btn btn-dark" onclick="exportSummary()">📄 Export Summary</button>
       <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
       <button class="btn btn-grey" onclick="resetAllData()">🔄 Reset Data</button>
@@ -537,13 +537,13 @@ function gisLoaded() {
     scope: GD_SCOPES,
     callback: function() {}
   });
-  console.log('\u2705 Google Identity Services siap');
+  console.log('\u2705 Layanan penyimpanan siap');
 }
 function gdEnsureToken(onReady) {
-  if (!gdTokenClient) { alert('Google API belum termuat. Cek koneksi internet lalu muat ulang halaman.'); return; }
+  if (!gdTokenClient) { alert('Layanan penyimpanan belum termuat. Cek koneksi internet lalu muat ulang halaman.'); return; }
   if (gdAccessToken) { onReady(); return; }
   gdTokenClient.callback = function(resp) {
-    if (resp.error) { alert('Login Google gagal: ' + resp.error); return; }
+    if (resp.error) { alert('Login gagal: ' + resp.error); return; }
     gdAccessToken = resp.access_token;
     onReady();
   };
@@ -573,21 +573,21 @@ function uploadPdfToDrive(monthIdx, rowIdx, btnEl) {
       .then(function(data) {
         if (data && data.id) {
           if (btnEl) { btnEl.disabled = false; btnEl.textContent = '\u2705 Tersimpan'; btnEl.classList.add('done'); }
-          console.log('\u2705 Upload Drive sukses:', data);
-          alert('\u2705 "' + fileName + '" berhasil disimpan ke Google Drive.');
+          console.log('\u2705 Upload sukses:', data);
+          alert('\u2705 "' + fileName + '" berhasil disimpan ke OneDrive.');
         } else {
-          if (btnEl) { btnEl.disabled = false; btnEl.textContent = '\u2601 Drive'; }
+          if (btnEl) { btnEl.disabled = false; btnEl.textContent = '\u2601 OneDrive'; }
           console.error('Upload gagal:', data);
           if (data && data.error && (data.error.code === 401 || data.error.code === 403)) {
             gdAccessToken = null;
-            alert('Sesi Google habis / izin ditolak. Klik tombol Drive lagi untuk login ulang.');
+            alert('Sesi habis / izin ditolak. Klik tombol OneDrive lagi untuk login ulang.');
           } else {
             alert('\u274C Gagal upload: ' + (data.error ? data.error.message : 'unknown'));
           }
         }
       })
       .catch(function(err) {
-        if (btnEl) { btnEl.disabled = false; btnEl.textContent = '\u2601 Drive'; }
+        if (btnEl) { btnEl.disabled = false; btnEl.textContent = '\u2601 OneDrive'; }
         console.error('Upload error:', err);
         alert('\u274C Gagal upload: ' + err.message);
       });
@@ -1114,7 +1114,7 @@ function renderMateriTable() {
       html += '\u{1F4C4} <span class="pdf-name">' + esc(dispName) + '</span>';
       html += '<span class="pdf-remove" onclick="event.stopPropagation();removePdf(' + activeMonth + ',' + i + ')" title="Hapus PDF">&times;</span>';
       html += '</div>';
-      html += '<button class="pdf-drive-btn" onclick="uploadPdfToDrive(' + activeMonth + ',' + i + ',this)" title="Simpan PDF ini ke Google Drive">☁ Drive</button>';
+      html += '<button class="pdf-drive-btn" onclick="uploadPdfToDrive(' + activeMonth + ',' + i + ',this)" title="Simpan PDF ini ke OneDrive">☁ OneDrive</button>';
     } else {
       html += '<input type="file" accept=".pdf" style="font-size:0.78em;width:120px;" onchange="uploadPdf(' + activeMonth + ',' + i + ',this)">';
     }
@@ -1456,8 +1456,8 @@ function renderAll() {
 
 // ============================================================
 // SIMPAN MATERI (Judul + PIC/siapa + dll) KE GOOGLE SHEETS
-// Semua tahun digabung dalam 1 spreadsheet di Google Drive.
-// Pakai scope drive.file yang sudah ada (CSV -> Google Sheet).
+// Semua tahun digabung dalam 1 file Excel di OneDrive.
+// Data disimpan sebagai file Excel di OneDrive.
 // ============================================================
 function buildMateriCSV() {
   // Header kolom
@@ -1501,18 +1501,18 @@ function saveToGoogleSheets(btnEl) {
     var csvBlob = new Blob([csv], { type: 'text/csv' });
 
     function done(data) {
-      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '☁ Simpan ke Google Sheets'; }
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '☁ Simpan di Excel & OneDrive'; }
       if (data && data.id) {
         localStorage.setItem('genba_sheet_id', data.id);
         var link = 'https://docs.google.com/spreadsheets/d/' + data.id + '/edit';
-        if (confirm('✅ Materi berhasil disimpan ke Google Sheets.\n\nBuka spreadsheet sekarang?')) {
+        if (confirm('✅ Materi berhasil disimpan ke Excel di OneDrive.\n\nBuka file sekarang?')) {
           window.open(link, '_blank');
         }
       } else {
-        console.error('Sheets save gagal:', data);
+        console.error('Simpan gagal:', data);
         if (data && data.error && (data.error.code === 401 || data.error.code === 403)) {
           gdAccessToken = null;
-          alert('Sesi Google habis / izin ditolak. Klik tombol lagi untuk login ulang.');
+          alert('Sesi habis / izin ditolak. Klik tombol lagi untuk login ulang.');
         } else {
           alert('❌ Gagal simpan: ' + (data && data.error ? data.error.message : 'unknown'));
         }
@@ -1534,7 +1534,7 @@ function saveToGoogleSheets(btnEl) {
           createNewSheet();
         }
       })
-      .catch(function(err){ if(btnEl){btnEl.disabled=false;btnEl.textContent='☁ Simpan ke Google Sheets';} alert('❌ Gagal: '+err.message); });
+      .catch(function(err){ if(btnEl){btnEl.disabled=false;btnEl.textContent='☁ Simpan di Excel & OneDrive';} alert('❌ Gagal: '+err.message); });
     } else {
       createNewSheet();
     }
@@ -1550,7 +1550,7 @@ function saveToGoogleSheets(btnEl) {
       })
       .then(function(res){ return res.json(); })
       .then(done)
-      .catch(function(err){ if(btnEl){btnEl.disabled=false;btnEl.textContent='☁ Simpan ke Google Sheets';} alert('❌ Gagal: '+err.message); });
+      .catch(function(err){ if(btnEl){btnEl.disabled=false;btnEl.textContent='☁ Simpan di Excel & OneDrive';} alert('❌ Gagal: '+err.message); });
     }
   });
 }
