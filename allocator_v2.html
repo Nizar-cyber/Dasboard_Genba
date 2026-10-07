@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDI Planning Allocator v2 - NVDC Cibitung</title>
+<style>
+:root{--navy:#0b1f3a;--navy2:#122d52;--navy3:#1b3c6b;--acc:#00a3e0;--acc2:#7ed957;
+--red:#e94f4f;--amb:#f0a830;--grn:#3ec46d;--blu:#4a9ded;--pur:#a97ee8;
+--txt:#e8eef7;--mut:#9db0c9;--line:#24406b;--card:#132a4d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--navy);color:var(--txt);font-size:13px}
+header{background:linear-gradient(135deg,var(--navy2),var(--navy3));padding:13px 20px;border-bottom:3px solid var(--acc);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header h1{font-size:17px;font-weight:600}header h1 span{color:var(--acc)}
+.sub{font-size:11px;color:var(--mut);margin-top:2px}
+.tabs{display:flex;background:var(--navy2);border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{padding:11px 18px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;color:var(--mut);font-weight:500}
+.tab:hover{background:var(--navy3);color:var(--txt)}.tab.on{border-bottom-color:var(--acc);color:#fff;background:var(--navy3)}
+.pane{display:none;padding:18px 20px}.pane.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:15px;margin-bottom:14px}
+.card h3{font-size:14px;margin-bottom:10px;color:var(--acc);display:flex;align-items:center;gap:7px}
+.hint{font-size:11px;color:var(--mut);margin-bottom:9px;line-height:1.55}
+textarea{width:100%;height:135px;background:#0a1830;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:9px;font-family:Consolas,monospace;font-size:11px;resize:vertical}
+input,select{background:#0a1830;color:var(--txt);border:1px solid var(--line);border-radius:5px;padding:6px 8px;font-size:12px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
+button{background:var(--acc);color:#04203a;border:none;border-radius:6px;padding:8px 15px;font-weight:600;cursor:pointer;font-size:12px}
+button:hover{filter:brightness(1.12)}
+button.sec{background:var(--navy3);color:var(--txt);border:1px solid var(--line)}
+button.dgr{background:var(--red);color:#fff}button.ok{background:var(--grn);color:#04203a}
+button.sm{padding:4px 9px;font-size:11px}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{background:var(--navy3);padding:7px 8px;text-align:left;border-bottom:2px solid var(--acc);font-weight:600;position:sticky;top:0;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line)}
+tr:hover td{background:rgba(0,163,224,.07)}
+.scroll{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:7px;padding:11px}
+.kpi .n{font-size:23px;font-weight:700;line-height:1.1}
+.kpi .l{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.kpi.r{border-left-color:var(--red)}.kpi.a{border-left-color:var(--amb)}
+.kpi.g{border-left-color:var(--grn)}.kpi.b{border-left-color:var(--blu)}.kpi.p{border-left-color:var(--pur)}
+.tag{display:inline-block;padding:2px 8px;border-radius:11px;font-size:10px;font-weight:700}
+.t-rec{background:rgba(233,79,79,.2);color:#ff8f8f;border:1px solid var(--red)}
+.t-onp{background:rgba(62,196,109,.2);color:#8ff0b3;border:1px solid var(--grn)}
+.t-adv{background:rgba(74,157,237,.2);color:#a5cffa;border:1px solid var(--blu)}
+.t-new{background:rgba(126,217,87,.18);color:#bdf29a}
+.t-pl{background:rgba(169,126,232,.2);color:#d3b6f7;border:1px solid var(--pur)}
+.t-cr{background:rgba(240,168,48,.2);color:#ffd98a;border:1px solid var(--amb)}
+.t-ok{background:rgba(62,196,109,.2);color:#8ff0b3}.t-no{background:rgba(233,79,79,.2);color:#ff8f8f}
+.t-par{background:rgba(240,168,48,.2);color:#ffd98a}
+.lines{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:13px}
+.lbox{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.lbox.pdi{border-color:var(--pur)}
+.lhead{background:var(--navy3);padding:10px 13px;border-bottom:2px solid var(--acc)}
+.lbox.pdi .lhead{border-bottom-color:var(--pur)}
+.lhead .nm{font-size:14px;font-weight:700}.lhead .cap{font-size:11px;color:var(--mut);margin-top:3px}
+.bar{height:7px;background:#0a1830;border-radius:4px;overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
+.bar i.full{background:linear-gradient(90deg,var(--amb),var(--red))}
+.bar i.low{background:linear-gradient(90deg,var(--amb),var(--amb))}
+.lbody{max-height:300px;overflow:auto}.lbody table{font-size:11px}
+.lbody th{background:var(--navy2);font-size:10px;padding:5px 7px}
+.alert{border-radius:7px;padding:11px 14px;margin-bottom:12px;border-left:4px solid;font-size:12px;line-height:1.55}
+.al-w{background:rgba(240,168,48,.12);border-color:var(--amb)}
+.al-d{background:rgba(233,79,79,.12);border-color:var(--red)}
+.al-i{background:rgba(0,163,224,.12);border-color:var(--acc)}
+.al-s{background:rgba(62,196,109,.12);border-color:var(--grn)}
+.al-p{background:rgba(169,126,232,.12);border-color:var(--pur)}
+.alert b{display:block;margin-bottom:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.badge{background:var(--navy3);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10px;margin:2px 3px 2px 0;display:inline-block}
+.chk{display:flex;align-items:center;gap:5px;padding:3px 7px;background:var(--navy3);border:1px solid var(--line);border-radius:5px;cursor:pointer;font-size:11px}
+.chk input{width:13px;height:13px;accent-color:var(--acc)}.chk.on{border-color:var(--acc);background:rgba(0,163,224,.16)}
+.mono{font-family:Consolas,monospace;font-size:11px}
+.step{display:inline-flex;width:19px;height:19px;background:var(--acc);color:#04203a;border-radius:50%;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-right:6px}
+.drop{border:2px dashed var(--line);border-radius:9px;padding:24px;text-align:center;cursor:pointer;transition:.2s}
+.drop:hover,.drop.over{border-color:var(--acc);background:rgba(0,163,224,.08)}
+.drop .ic{font-size:34px;margin-bottom:7px}
+.foot{padding:13px 20px;border-top:1px solid var(--line);color:var(--mut);font-size:11px;text-align:center}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;padding:12px;background:#0a1830;border-radius:8px;margin-bottom:13px}
+.fnode{background:var(--navy3);border:1px solid var(--line);border-radius:7px;padding:9px 14px;text-align:center;min-width:104px}
+.fnode.a{border-color:var(--pur)}.fnode.b{border-color:var(--amb)}.fnode.c{border-color:var(--acc)}
+.fnode .t{font-size:10px;color:var(--mut);text-transform:uppercase}
+.fnode .v{font-size:19px;font-weight:700;margin-top:2px}
+.farr{color:var(--mut);font-size:17px}
+</style>
+</head>
+<body>
+
+<header>
+  <div><h1>🏭 PDI PLANNING <span>ALLOCATOR v2</span></h1>
+  <div class="sub">NVDC Cibitung · Stage PDI → PIO · Anti Double-Plan · Auto Capacity</div></div>
+  <div class="row">
+    <span class="badge" id="tgtBadge">Target: —</span>
+    <button class="sm" onclick="runAlloc()">▶ Jalankan Alokasi</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab on" data-p="p1">1. Data Unit</div>
+  <div class="tab" data-p="p2">2. Upload Config</div>
+  <div class="tab" data-p="p3">3. Line &amp; Takt</div>
+  <div class="tab" data-p="p4">4. Parts</div>
+  <div class="tab" data-p="p5">5. Hasil Alokasi</div>
+  <div class="tab" data-p="p6">6. Buffer PIO</div>
+  <div class="tab" data-p="p7">7. Plan Register</div>
+</div>
+
+<!-- TAB 1 -->
+<div class="pane on" id="p1">
+  <div class="alert al-i"><b>Cara pakai</b>Copy hasil query dari sheet Excel (<b>termasuk header</b>), paste ke kotak. Format tab/koma/titik-koma otomatis terdeteksi. Data vertikal juga bisa dibaca.</div>
+  <div class="grid2">
+    <div class="card"><h3><span class="step">1</span>Data Planning (belum PDI)</h3>
+      <div class="hint">Wajib: <span class="mono">framenumber, modelname, dtplod</span>. Opsional: <span class="mono">plan_category, aging_day, typename, colorname, origin_country, parkinglocation, holddeliverystatus</span></div>
+      <textarea id="txtPlan" placeholder="framenumber	modelname	dtplod	plan_category ..."></textarea>
+      <div class="row" style="margin-top:9px"><button class="sm" onclick="parsePlan()">📥 Muat Planning</button><span id="planInfo" class="hint" style="margin:0"></span></div>
+    </div>
+    <div class="card"><h3><span class="step">2</span>Data Buffer PIO</h3>
+      <div class="hint">Wajib: <span class="mono">framenumber, modelname, pdidate</span>. Opsional: <span class="mono">days_waiting_pio, origin_country, parkinglocation</span></div>
+      <textarea id="txtBuf" placeholder="framenumber	modelname	pdidate	days_waiting_pio ..."></textarea>
+      <div class="row" style="margin-top:9px"><button class="sm" onclick="parseBuf()">📥 Muat Buffer</button><span id="bufInfo" class="hint" style="margin:0"></span></div>
+    </div>
+  </div>
+  <div class="card"><h3>📋 Preview Planning</h3><div class="scroll" id="prevPlan"><div class="hint" style="padding:14px">Belum ada data.</div></div></div>
+</div>
+
+<!-- TAB 2 -->
+<div class="pane" id="p2">
+  <div class="alert al-i"><b>Upload Template Excel</b>Upload file <b>Template_Capacity_Line_PDI.xlsx</b>. Tool otomatis membaca sheet <b>1. Line Capacity</b>, <b>1b. PDI Line</b>, <b>2. Model Mapping</b>, dan <b>3. Kesiapan Parts</b> — semua kapasitas dihitung ulang otomatis.</div>
+  <div class="card">
+    <div class="drop" id="drop" onclick="document.getElementById('fx').click()">
+      <div class="ic">📊</div>
+      <div style="font-weight:600;font-size:14px">Klik atau drag file Excel ke sini</div>
+      <div class="hint" style="margin-top:5px">Format .xlsx · diproses 100% di browser, tidak dikirim ke mana pun</div>
+    </div>
+    <input type="file" id="fx" accept=".xlsx" style="display:none">
+    <div id="upInfo" style="margin-top:12px"></div>
+  </div>
+  <div class="card"><h3>🔎 Hasil Pembacaan</h3><div id="upRead"><div class="hint">Belum ada file diupload. Kamu tetap bisa isi manual di Tab 3 &amp; 4.</div></div></div>
+</div>
+
+<!-- TAB 3 -->
+<div class="pane" id="p3">
+  <div class="alert al-p"><b>Alur 2 Stage</b>Unit masuk <b>LINE PDI</b> dulu (TT pendek, 2 line), hasilnya jadi buffer, lalu disuplai ke <b>LINE/STALL PIO</b>. Output harian dibatasi oleh stage yang paling kecil (<b>bottleneck</b>).</div>
+  <div class="flow" id="flowBox"></div>
+
+  <div class="card"><h3>⏱️ Menit Kerja per Code</h3>
+    <div class="hint">Kapasitas = <span class="mono">ROUND(Menit Kerja ÷ Takt Time)</span>. Ubah di sini kalau jam kerja berubah.</div>
+    <div class="row" id="codeCfg"></div>
+  </div>
+
+  <div class="card"><h3>🔧 Stage 1 — Line PDI</h3>
+    <div class="row" style="margin-bottom:10px"><button class="sm" onclick="addLine('pdi')">➕ Tambah Line PDI</button>
+      <span class="hint" style="margin:0">Total kapasitas PDI: <b id="capPdi" style="color:var(--pur)">0</b> unit</span></div>
+    <div id="cfgPdi"></div>
+  </div>
+
+  <div class="card"><h3>🏭 Stage 2 — Line / Stall PIO</h3>
+    <div class="row" style="margin-bottom:10px"><button class="sm" onclick="addLine('pio')">➕ Tambah Line PIO</button>
+      <button class="sec sm" onclick="resetLines()">↺ Reset Default</button>
+      <span class="hint" style="margin:0">Total kapasitas PIO: <b id="capPio" style="color:var(--acc2)">0</b> unit</span></div>
+    <div id="cfgPio"></div>
+  </div>
+</div>
+
+<!-- TAB 4 -->
+<div class="pane" id="p4">
+  <div class="alert al-i"><b>Kesiapan Parts</b><span class="tag t-ok">READY</span> semua jalan · <span class="tag t-par">PARTIAL</span> dibatasi jumlah set · <span class="tag t-no">SHORT</span> diblokir total.</div>
+  <div class="card"><h3>🔩 Status Parts per Model</h3>
+    <div class="row" style="margin-bottom:10px">
+      <button class="sm" onclick="setAllParts('READY')">✅ Semua READY</button>
+      <button class="sec sm" onclick="setAllParts('PARTIAL')">⚠️ Semua PARTIAL</button>
+      <button class="dgr sm" onclick="setAllParts('SHORT')">⛔ Semua SHORT</button></div>
+    <div class="scroll" id="partsTbl"><div class="hint" style="padding:14px">Muat data planning dulu di Tab 1.</div></div>
+  </div>
+  <div class="card"><h3>🎯 Guardrail &amp; Anti Double-Plan</h3>
+    <div class="row" style="margin-bottom:9px">
+      <label class="chk on" id="lg1"><input type="checkbox" id="chkGuard" checked onchange="this.parentNode.classList.toggle('on',this.checked)"> Guardrail buffer PIO</label>
+      <span>Ambang:</span><input type="number" id="bufLimit" value="30" min="0" style="width:70px">
+      <span class="hint" style="margin:0">unit — kalau buffer ≥ ini, ADVANCE diblokir</span></div>
+    <div class="row" style="margin-bottom:9px">
+      <label class="chk on" id="lg2"><input type="checkbox" id="chkDedup" checked onchange="this.parentNode.classList.toggle('on',this.checked)"> Anti double-plan (skip frame yang sudah pernah di-plan)</label></div>
+    <div class="row">
+      <label class="chk on" id="lg3"><input type="checkbox" id="chkTopup" checked onchange="this.parentNode.classList.toggle('on',this.checked)"> Auto top-up ADVANCE kalau kapasitas masih sisa</label>
+      <span class="hint" style="margin:0">Untuk kasus unit belum sampai dari port — slot kosong diisi unit advance</span></div>
+  </div>
+</div>
+
+<!-- TAB 5 -->
+<div class="pane" id="p5">
+  <div id="alerts"></div>
+  <div class="flow" id="flowRes"></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card"><h3>🏭 Alokasi per Line</h3>
+    <div class="row" style="margin-bottom:11px">
+      <button class="sm" onclick="runAlloc()">🔄 Hitung Ulang</button>
+      <button class="ok sm" onclick="lockPlan()">🔒 Lock Plan (simpan register)</button>
+      <button class="sec sm" onclick="exportAlloc()">⬇ Export CSV</button>
+      <button class="sec sm" onclick="printWS()">🖨 Print Worksheet</button></div>
+    <div class="lines" id="lineOut"></div>
+  </div>
+  <div class="card"><h3>⚠️ Unit Tidak Teralokasi</h3>
+    <div class="scroll" id="unalloc"><div class="hint" style="padding:14px">Belum dijalankan.</div></div></div>
+</div>
+
+<!-- TAB 6 -->
+<div class="pane" id="p6">
+  <div id="bufAlert"></div><div class="kpis" id="bufKpi"></div>
+  <div class="card"><h3>📦 Daftar Buffer PIO</h3>
+    <div class="hint">Unit sudah selesai PDI tapi belum masuk line PIO. Urut dari paling lama antre — <b>habiskan duluan supaya FIFO tidak pecah</b>.</div>
+    <div class="scroll" id="bufTbl"><div class="hint" style="padding:14px">Belum ada data buffer.</div></div></div>
+</div>
+
+<!-- TAB 7 -->
+<div class="pane" id="p7">
+  <div class="alert al-p"><b>Plan Register — anti dobel plan</b>Setiap kali klik <b>Lock Plan</b>, semua frame yang dialokasikan disimpan di browser. Saat alokasi berikutnya, frame yang sudah terdaftar otomatis ditandai <span class="tag t-pl">PLANNED</span> / <span class="tag t-cr">CARRY</span> dan tidak akan dobel masuk worksheet.</div>
+  <div class="kpis" id="regKpi"></div>
+  <div class="card"><h3>💾 Kelola Register</h3>
+    <div class="row">
+      <button class="sec sm" onclick="expReg()">⬇ Export Register (JSON)</button>
+      <button class="sec sm" onclick="document.getElementById('fr').click()">⬆ Import Register</button>
+      <input type="file" id="fr" accept=".json" style="display:none">
+      <button class="dgr sm" onclick="clearReg()">🗑 Hapus Semua Register</button></div>
+    <div class="hint" style="margin-top:8px">Register tersimpan per-browser (localStorage). Untuk pindah PC, gunakan Export lalu Import.</div>
+  </div>
+  <div class="card"><h3>📜 Riwayat Plan</h3><div class="scroll" id="regTbl"><div class="hint" style="padding:14px">Belum ada riwayat.</div></div></div>
+</div>
+
+<div class="foot">PDI Planning Allocator v2 · 100% client-side · Toyota-Astra Motor</div>
+
+<script>
+/* ============ XLSX READER ============ */
+const XR=(function(){
+ function u16(d,o){return d[o]|d[o+1]<<8}
+ function u32(d,o){return (d[o]|d[o+1]<<8|d[o+2]<<16|d[o+3]<<24)>>>0}
+ async function inflateRaw(b){
+  if(typeof DecompressionStream==='undefined') throw new Error('Browser tidak mendukung DecompressionStream. Pakai Edge/Chrome terbaru.');
+  const s=new Blob([b]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(s).arrayBuffer());}
+ async function unzip(ab){
+  const d=new Uint8Array(ab); let eo=-1;
+  for(let i=d.length-22;i>=0&&i>d.length-66000;i--){if(u32(d,i)===0x06054b50){eo=i;break}}
+  if(eo<0) throw new Error('File bukan .xlsx yang valid.');
+  const n=u16(d,eo+10),cdo=u32(d,eo+16),f={};let p=cdo;
+  for(let i=0;i<n;i++){ if(u32(d,p)!==0x02014b50)break;
+   const meth=u16(d,p+10),csz=u32(d,p+20),nl=u16(d,p+28),el=u16(d,p+30),cl=u16(d,p+32),lho=u32(d,p+42);
+   const name=new TextDecoder().decode(d.subarray(p+46,p+46+nl));
+   const lnl=u16(d,lho+26),lel=u16(d,lho+28),ds=lho+30+lnl+lel;
+   f[name]={meth,data:d.subarray(ds,ds+csz)}; p+=46+nl+el+cl;}
+  return f;}
+ async function rd(f,n){const e=f[n];if(!e)return null;
+  const raw=e.meth===0?e.data:await inflateRaw(e.data);
+  return new TextDecoder('utf-8').decode(raw);}
+ function cn(r){let x=0;for(let i=0;i<r.length;i++){const c=r.charCodeAt(i);if(c>=65&&c<=90)x=x*26+(c-64);else break}return x}
+ function psheet(xml,sh){
+  const doc=new DOMParser().parseFromString(xml,'application/xml'),rows=[];let mc=0;
+  doc.querySelectorAll('row').forEach(r=>{
+   const ri=parseInt(r.getAttribute('r')||'0',10),a=[];
+   r.querySelectorAll('c').forEach(c=>{
+    const ref=c.getAttribute('r')||'',t=c.getAttribute('t'),ci=cn(ref)-1; if(ci<0)return;
+    let v='';
+    if(t==='inlineStr'){const is=c.querySelector('is');v=is?is.textContent:'';}
+    else{const vn=c.querySelector('v'); if(vn){v=vn.textContent; if(t==='s')v=sh[parseInt(v,10)]||'';}}
+    a[ci]=String(v).trim(); if(ci+1>mc)mc=ci+1;});
+   rows[ri-1]=a;});
+  for(let i=0;i<rows.length;i++){if(!rows[i])rows[i]=[];for(let j=0;j<mc;j++)if(rows[i][j]===undefined)rows[i][j]='';}
+  return rows;}
+ async function read(file){
+  const f=await unzip(await file.arrayBuffer());
+  let sh=[]; const ss=await rd(f,'xl/sharedStrings.xml');
+  if(ss){const d=new DOMParser().parseFromString(ss,'application/xml');
+   sh=[...d.querySelectorAll('si')].map(si=>{const t=si.querySelector('t');
+    if(t&&si.children.length===1)return t.textContent;
+    return [...si.querySelectorAll('r > t')].map(x=>x.textContent).join('');});}
+  const wbx=await rd(f,'xl/workbook.xml'),rels=await rd(f,'xl/_rels/workbook.xml.rels'),rm={};
+  if(rels)new DOMParser().parseFromString(rels,'application/xml').querySelectorAll('Relationship')
+    .forEach(x=>rm[x.getAttribute('Id')]=x.getAttribute('Target'));
+  const out={},wd=new DOMParser().parseFromString(wbx,'application/xml'),shs=[...wd.querySelectorAll('sheet')];
+  for(let i=0;i<shs.length;i++){
+   const nm=shs[i].getAttribute('name');
+   const rid=shs[i].getAttribute('r:id')||shs[i].getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');
+   let t=rm[rid]||('worksheets/sheet'+(i+1)+'.xml');
+   if(t.startsWith('/'))t=t.slice(1); else if(!t.startsWith('xl/'))t='xl/'+t;
+   const sx=await rd(f,t); out[nm]=sx?psheet(sx,sh):[];}
+  return out;}
+ return {read};})();
+
+/* ============ STATE ============ */
+let PLAN=[],BUF=[],LINES=[],PARTS={},MAP={},RESULT=null;
+let CODEMIN={A:430,B:535,C:595,D:625};
+const RK='pdi_plan_register_v2';
+let REG=JSON.parse(localStorage.getItem(RK)||'{"frames":{},"history":[]}');
+
+const DEF=[
+ {id:1,stage:'pdi',name:'PDI Line 1',tt:5,code:'A',models:[]},
+ {id:2,stage:'pdi',name:'PDI Line 2',tt:5,code:'A',models:[]},
+ {id:3,stage:'pio',name:'Line 1',tt:6,code:'A',models:[]},
+ {id:4,stage:'pio',name:'Line 2',tt:37.5,code:'A',models:[]},
+ {id:5,stage:'pio',name:'Line 3',tt:21,code:'A',models:[]},
+ {id:6,stage:'pio',name:'Stall 1',tt:22.5,code:'A',models:[]},
+ {id:7,stage:'pio',name:'Stall 2',tt:67,code:'A',models:[]},
+ {id:8,stage:'pio',name:'Stall 3',tt:30,code:'A',models:[]},
+ {id:9,stage:'pio',name:'Stall 4',tt:13,code:'A',models:[]}];
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+ t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');});
+
+/* ============ HELPERS ============ */
+function clean(t){return t.replace(/<br\s*\/?>/gi,'').replace(/&nbsp;/gi,' ').replace(/\u00a0/g,' ')}
+function sep(t){const l=t.split(/\r?\n/).find(x=>x.trim());if(!l)return '\t';
+ if(l.indexOf('\t')>=0)return '\t';const c=(l.match(/,/g)||[]).length,s=(l.match(/;/g)||[]).length;
+ return s>c?';':(c>0?',':'\t')}
+function isHdr(s){s=s.trim();return s.length>0&&s.length<32&&/^[a-z][a-z0-9_ ]*$/.test(s)}
+function pTable(raw){
+ let t=clean(raw).trim();if(!t)return [];
+ const L=t.split(/\r?\n/),S=sep(t);
+ if(L[0].split(S).length<=1){
+  let h=[],i=0; while(i<L.length&&isHdr(L[i])){h.push(L[i].trim().toLowerCase());i++}
+  if(h.length>=3){const b=L.slice(i),o=[],N=h.length;
+   for(let s=0;s+N<=b.length;s+=N){const x={};h.forEach((k,j)=>x[k]=(b[s+j]||'').trim());if(x.framenumber)o.push(x)}
+   return o;}}
+ const R=L.filter(r=>r.trim()),H=R[0].split(S).map(x=>x.trim().toLowerCase().replace(/^"|"$/g,''));
+ return R.slice(1).map(r=>{const c=r.split(S),o={};H.forEach((k,i)=>o[k]=(c[i]||'').trim().replace(/^"|"$/g,''));return o})
+  .filter(o=>o.framenumber)}
+function num(s){if(s==null||s==='')return null;const v=parseFloat(String(s).replace(',','.'));return isNaN(v)?null:v}
+function toDate(s){if(!s)return null;let m=String(s).match(/^(\d{2})-(\d{2})-(\d{4})/);
+ if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+ m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/); if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+ const d=new Date(s);return isNaN(d)?null:d}
+function fmtD(d){return d?String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear():'—'}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function q(s){return String(s).replace(/'/g,"\\'")}
+function nextWD(){let d=new Date();d.setHours(0,0,0,0);
+ for(let i=1;i<=14;i++){const x=new Date(d);x.setDate(x.getDate()+i);if(x.getDay()!==0&&x.getDay()!==6)return x}return d}
+const TARGET=nextWD();
+document.getElementById('tgtBadge').textContent='Target: '+fmtD(TARGET);
+const TKEY=fmtD(TARGET);
+
+/* ============ PARSE ============ */
+function parsePlan(){
+ PLAN=pTable(document.getElementById('txtPlan').value);
+ PLAN.forEach(r=>{
+  r._model=(r.modelname||'UNKNOWN').toUpperCase().trim();
+  r._dt=toDate(r.dtplod);
+  r._cat=(r.plan_category||'').toUpperCase().trim();
+  if(!r._cat&&r._dt){const d=Math.round((r._dt-TARGET)/864e5);r._cat=d<0?'RECOVERY':d===0?'ON PLAN':'ADVANCE'}
+  const a=num(r.aging_day);
+  r._aging=a!==null?Math.round(a):(r._dt?Math.round((r._dt-TARGET)/864e5):0);
+  r._hold=(r.holddeliverystatus||'').trim();
+  const rg=REG.frames[r.framenumber];
+  r._reg=rg||null;
+  r._rstat=!rg?'NEW':(rg.planDate===TKEY?'PLANNED':'CARRY');
+ });
+ document.getElementById('planInfo').innerHTML=PLAN.length
+  ?'✅ <b style="color:var(--acc2)">'+PLAN.length+'</b> unit dimuat'
+  :'<b style="color:#ff8f8f">⚠️ 0 terbaca</b> — pastikan header ikut ter-copy';
+ prevPlan();buildParts();renderLines();
+}
+function parseBuf(){
+ BUF=pTable(document.getElementById('txtBuf').value);
+ BUF.forEach(r=>{r._model=(r.modelname||'UNKNOWN').toUpperCase().trim();
+  r._pdi=toDate(r.pdidate);
+  const w=num(r.days_waiting_pio);
+  r._wait=w!==null?Math.round(w):(r._pdi?Math.round((new Date().setHours(0,0,0,0)-r._pdi)/864e5):0);});
+ BUF.sort((a,b)=>b._wait-a._wait);
+ document.getElementById('bufInfo').innerHTML=BUF.length
+  ?'✅ <b style="color:var(--acc2)">'+BUF.length+'</b> unit buffer'
+  :'<b style="color:#ff8f8f">⚠️ 0 terbaca</b> — pastikan header ikut ter-copy';
+ renderBuf();renderFlow();
+}
+function prevPlan(){
+ if(!PLAN.length){document.getElementById('prevPlan').innerHTML='<div class="hint" style="padding:14px">Belum ada data.</div>';return}
+ let h='<table><thead><tr><th>Frame</th><th>Model</th><th>Type</th><th>Warna</th><th>DTPLOD</th><th>Kat</th><th>Aging</th><th>Register</th></tr></thead><tbody>';
+ PLAN.slice(0,200).forEach(r=>{h+='<tr><td class="mono">'+esc(r.framenumber)+'</td><td><b>'+esc(r._model)+'</b></td><td>'+esc(r.typename)+'</td><td>'+esc(r.colorname)+'</td><td>'+fmtD(r._dt)+'</td><td>'+cTag(r._cat)+'</td><td>'+aCell(r._aging)+'</td><td>'+rTag(r._rstat)+'</td></tr>'});
+ h+='</tbody></table>';
+ if(PLAN.length>200)h+='<div class="hint" style="padding:8px">Menampilkan 200 dari '+PLAN.length+' baris.</div>';
+ document.getElementById('prevPlan').innerHTML=h;
+}
+function cTag(c){return c==='RECOVERY'?'<span class="tag t-rec">RECOVERY</span>':c==='ON PLAN'?'<span class="tag t-onp">ON PLAN</span>':c==='ADVANCE'?'<span class="tag t-adv">ADVANCE</span>':'<span class="tag">'+esc(c||'-')+'</span>'}
+function rTag(s){return s==='NEW'?'<span class="tag t-new">NEW</span>':s==='PLANNED'?'<span class="tag t-pl">PLANNED</span>':'<span class="tag t-cr">CARRY</span>'}
+function aCell(a){return a<0?'<span style="color:var(--red);font-weight:700">'+a+'</span>':a===0?'<b>0</b>':'<span style="color:var(--blu)">+'+a+'</span>'}
+
+/* ============ UPLOAD ============ */
+const drop=document.getElementById('drop');
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',ev=>{const f=ev.dataTransfer.files[0];if(f)doUpload(f)});
+document.getElementById('fx').onchange=e=>{const f=e.target.files[0];if(f)doUpload(f)};
+
+function findSheet(wb,keys){
+ const n=Object.keys(wb);
+ for(const k of keys){const m=n.find(x=>x.toLowerCase().includes(k));if(m)return m}
+ return null}
+function rowIdx(rows,kw){
+ for(let i=0;i<Math.min(rows.length,20);i++){
+  const j=rows[i].map(x=>String(x).toLowerCase().replace(/\s+/g,' '));
+  if(j.some(c=>kw.some(k=>c.includes(k))))return i}
+ return -1}
+
+async function doUpload(file){
+ const inf=document.getElementById('upInfo');
+ inf.innerHTML='<div class="alert al-i">⏳ Membaca file…</div>';
+ try{
+  const wb=await XR.read(file);
+  let log=[],nl=[],nid=1;
+
+  // --- PDI sheet ---
+  const sp=findSheet(wb,['pdi line','1b']);
+  if(sp){
+   const R=wb[sp],hi=rowIdx(R,['line pdi','tt pdi']);
+   if(hi>=0){
+    const H=R[hi].map(x=>String(x).toLowerCase());
+    const ci={nm:H.findIndex(x=>x.includes('line')),tt:H.findIndex(x=>x.includes('tt')),cd:H.findIndex(x=>x.includes('code'))};
+    let c=0;
+    for(let i=hi+1;i<R.length;i++){
+     const nm=(R[i][ci.nm]||'').trim();
+     if(!nm||/total|rumus|catatan|alur|perband|kapasitas pdi|kapasitas pio|bottleneck|selisih/i.test(nm))continue;
+     const tt=num(R[i][ci.tt]); if(!tt)continue;
+     nl.push({id:nid++,stage:'pdi',name:nm,tt,code:(R[i][ci.cd]||'A').trim().toUpperCase().charAt(0)||'A',models:[]});c++}
+    log.push('✅ <b>'+sp+'</b> → '+c+' line PDI');
+   }
+  } else log.push('⚠️ Sheet PDI Line tidak ditemukan');
+
+  // --- PIO sheet + code minutes ---
+  const sc=findSheet(wb,['line capacity','1. line']);
+  if(sc){
+   const R=wb[sc],hi=rowIdx(R,['tt sep']);
+   if(hi>=0){
+    // code minutes from row above header
+    for(let i=Math.max(0,hi-2);i<=hi;i++){
+     const nums=R[i].map(num).filter(v=>v&&v>=300&&v<=900);
+     if(nums.length>=4){CODEMIN={A:nums[0],B:nums[1],C:nums[2],D:nums[3]};log.push('✅ Menit kerja Code: A='+nums[0]+' B='+nums[1]+' C='+nums[2]+' D='+nums[3]);break}}
+    const H=R[hi].map(x=>String(x).toLowerCase().replace(/\s+/g,' '));
+    const ci={nm:H.findIndex(x=>x.includes('line number')||x.includes('line')),
+              tt:H.findIndex(x=>x.includes('tt sep')),cd:H.findIndex(x=>x==='code'||x.includes('code'))};
+    let c=0;
+    for(let i=hi+1;i<R.length;i++){
+     const nm=(R[i][ci.nm]||'').trim();
+     if(!nm||/total|rekap|rumus|contoh|cara|catatan/i.test(nm))continue;
+     const tt=num(R[i][ci.tt]); if(!tt)continue;
+     nl.push({id:nid++,stage:'pio',name:nm,tt,code:(R[i][ci.cd]||'A').trim().toUpperCase().charAt(0)||'A',models:[]});c++}
+    log.push('✅ <b>'+sc+'</b> → '+c+' line/stall PIO');
+   }
+  } else log.push('⚠️ Sheet Line Capacity tidak ditemukan');
+
+  if(nl.length){LINES=nl}
+
+  // --- Model mapping ---
+  const sm=findSheet(wb,['model mapping','2. model']);
+  if(sm){
+   const R=wb[sm],hi=rowIdx(R,['model name']);
+   if(hi>=0){
+    const H=R[hi].map(x=>String(x).trim());
+    MAP={};let c=0;
+    for(let i=hi+1;i<R.length;i++){
+     const m=(R[i][0]||'').trim().toUpperCase();
+     if(!m||/cara pakai|contoh|catatan|^-/i.test(m))continue;
+     const al=[];
+     for(let j=1;j<H.length;j++){
+      const hn=H[j]; if(!hn||/jml|catatan/i.test(hn))continue;
+      if(String(R[i][j]||'').trim().toUpperCase()==='Y')al.push(hn)}
+     if(al.length){MAP[m]=al;c++}}
+    // apply to lines
+    LINES.forEach(l=>{l.models=Object.keys(MAP).filter(m=>MAP[m].includes(l.name))});
+    log.push('✅ <b>'+sm+'</b> → '+c+' model ter-mapping'+(c===0?' <span style="color:var(--amb)">(belum ada Y — semua line terima semua model)</span>':''));
+   }
+  }
+
+  // --- Parts ---
+  const spt=findSheet(wb,['parts','3. kesiapan']);
+  if(spt){
+   const R=wb[spt],hi=rowIdx(R,['status parts']);
+   if(hi>=0){
+    const H=R[hi].map(x=>String(x).toLowerCase());
+    const ci={st:H.findIndex(x=>x.includes('status')),qt:H.findIndex(x=>x.includes('set'))};
+    let c=0;
+    for(let i=hi+1;i<R.length;i++){
+     const m=(R[i][0]||'').trim().toUpperCase();
+     if(!m||/aturan|kolom|^-/i.test(m))continue;
+     const st=(R[i][ci.st]||'READY').trim().toUpperCase();
+     if(!['READY','PARTIAL','SHORT'].includes(st))continue;
+     PARTS[m]={status:st,qty:Math.round(num(R[i][ci.qt])||0)};c++}
+    log.push('✅ <b>'+spt+'</b> → '+c+' model parts');
+   }
+  }
+
+  renderCode();renderLines();renderParts();renderFlow();
+  inf.innerHTML='<div class="alert al-s"><b>✅ File berhasil dibaca</b>'+file.name+'</div>';
+  document.getElementById('upRead').innerHTML='<div class="hint" style="line-height:1.9">'+log.join('<br>')+'</div>'
+   +'<div class="alert al-i" style="margin-top:10px"><b>Langkah berikutnya</b>Cek Tab 3 (Line &amp; Takt) dan Tab 4 (Parts) — semua sudah terisi otomatis. Lalu klik <b>Jalankan Alokasi</b>.</div>';
+ }catch(e){
+  inf.innerHTML='<div class="alert al-d"><b>❌ Gagal membaca file</b>'+esc(e.message)+'<br>Pastikan file .xlsx asli (bukan .xls / .csv), lalu coba lagi. Kamu tetap bisa isi manual di Tab 3 &amp; 4.</div>';
+ }
+}
+
+/* ============ CONFIG ============ */
+function capOf(l){const m=CODEMIN[l.code]||430;return l.tt>0?Math.round(m/l.tt):0}
+function stg(s){return LINES.filter(l=>l.stage===s)}
+function capStage(s){return stg(s).reduce((a,l)=>a+capOf(l),0)}
+function allModels(){const s=new Set();PLAN.forEach(r=>s.add(r._model));Object.keys(MAP).forEach(m=>s.add(m));return [...s].sort()}
+
+function renderCode(){
+ document.getElementById('codeCfg').innerHTML=['A','B','C','D'].map(c=>
+  '<span class="badge" style="border-color:var(--acc)">Code '+c+'</span><input type="number" value="'+CODEMIN[c]+'" min="1" style="width:78px" onchange="CODEMIN[\''+c+'\']=+this.value;renderLines();renderFlow()"><span class="hint" style="margin:0">menit</span>').join('');
+}
+function resetLines(){LINES=JSON.parse(JSON.stringify(DEF));renderLines();renderFlow()}
+function addLine(s){const id=LINES.length?Math.max(...LINES.map(l=>l.id))+1:1;
+ LINES.push({id,stage:s,name:(s==='pdi'?'PDI Line ':'Line ')+id,tt:s==='pdi'?5:20,code:'A',models:[]});renderLines();renderFlow()}
+function delLine(id){LINES=LINES.filter(l=>l.id!==id);renderLines();renderFlow()}
+function upd(id,k,v){const l=LINES.find(x=>x.id===id);if(l){l[k]=v;renderLines();renderFlow()}}
+function togM(id,m,on){const l=LINES.find(x=>x.id===id);if(!l)return;
+ if(on){if(!l.models.includes(m))l.models.push(m)}else l.models=l.models.filter(x=>x!==m);renderLines()}
+
+function renderLines(){
+ const ms=allModels();
+ ['pdi','pio'].forEach(s=>{
+  let h='';
+  stg(s).forEach(l=>{
+   h+='<div class="card" style="background:#0f2444;margin-bottom:10px;padding:12px"><div class="row" style="margin-bottom:8px">'
+    +'<input value="'+esc(l.name)+'" onchange="upd('+l.id+',\'name\',this.value)" style="width:118px;font-weight:700">'
+    +'<span>Takt</span><input type="number" min="0.1" step="0.5" value="'+l.tt+'" onchange="upd('+l.id+',\'tt\',+this.value)" style="width:68px"><span class="hint" style="margin:0">mnt/unit</span>'
+    +'<span>Code</span><select onchange="upd('+l.id+',\'code\',this.value)">'+['A','B','C','D'].map(c=>'<option '+(l.code===c?'selected':'')+'>'+c+'</option>').join('')+'</select>'
+    +'<span class="hint" style="margin:0">'+(CODEMIN[l.code]||430)+' mnt</span>'
+    +'<span class="badge" style="border-color:var(--acc);color:var(--acc2)">Kapasitas: <b>'+capOf(l)+'</b></span>'
+    +'<button class="dgr sm" onclick="delLine('+l.id+')">🗑</button></div>'
+    +'<div class="hint" style="margin:0 0 5px">Model (kosong = semua model):</div><div class="row">';
+   if(!ms.length)h+='<span class="hint" style="margin:0">Muat data planning / upload Excel dulu.</span>';
+   ms.forEach(m=>{const on=l.models.includes(m);
+    h+='<label class="chk'+(on?' on':'')+'"><input type="checkbox" '+(on?'checked':'')+' onchange="togM('+l.id+',\''+q(m)+'\',this.checked)">'+esc(m)+'</label>'});
+   h+='</div></div>'});
+  document.getElementById(s==='pdi'?'cfgPdi':'cfgPio').innerHTML=h||'<div class="hint">Belum ada line.</div>'});
+ document.getElementById('capPdi').textContent=capStage('pdi');
+ document.getElementById('capPio').textContent=capStage('pio');
+}
+function renderFlow(){
+ const cp=capStage('pdi'),ci=capStage('pio'),bn=Math.min(cp,ci);
+ const h='<div class="fnode"><div class="t">Stock Unit</div><div class="v">'+PLAN.length+'</div></div><span class="farr">→</span>'
+  +'<div class="fnode a"><div class="t">Kapasitas PDI</div><div class="v" style="color:var(--pur)">'+cp+'</div></div><span class="farr">→</span>'
+  +'<div class="fnode b"><div class="t">Buffer PIO</div><div class="v" style="color:var(--amb)">'+BUF.length+'</div></div><span class="farr">→</span>'
+  +'<div class="fnode c"><div class="t">Kapasitas PIO</div><div class="v" style="color:var(--acc)">'+ci+'</div></div><span class="farr">⇒</span>'
+  +'<div class="fnode"><div class="t">Bottleneck</div><div class="v" style="color:var(--acc2)">'+bn+'</div></div>';
+ document.getElementById('flowBox').innerHTML=h;
+ const fr=document.getElementById('flowRes'); if(fr)fr.innerHTML=h;
+}
+
+/* ============ PARTS ============ */
+function buildParts(){allModels().forEach(m=>{if(!PARTS[m])PARTS[m]={status:'READY',qty:0}});renderParts()}
+function renderParts(){
+ const ms=allModels();
+ if(!ms.length){document.getElementById('partsTbl').innerHTML='<div class="hint" style="padding:14px">Muat data planning atau upload Excel dulu.</div>';return}
+ let h='<table><thead><tr><th>Model</th><th>Jml Unit</th><th>Status</th><th>Set Tersedia</th><th>Efek</th></tr></thead><tbody>';
+ ms.forEach(m=>{const n=PLAN.filter(r=>r._model===m).length,p=PARTS[m]||{status:'READY',qty:0};
+  h+='<tr><td><b>'+esc(m)+'</b></td><td>'+n+'</td><td><select onchange="setPart(\''+q(m)+'\',\'status\',this.value)">'
+   +['READY','PARTIAL','SHORT'].map(s=>'<option '+(p.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td>'
+   +'<td><input type="number" min="0" value="'+p.qty+'" '+(p.status!=='PARTIAL'?'disabled':'')+' onchange="setPart(\''+q(m)+'\',\'qty\',+this.value)" style="width:76px"></td>'
+   +'<td>'+(p.status==='READY'?'<span class="tag t-ok">Semua bisa</span>':p.status==='PARTIAL'?'<span class="tag t-par">Maks '+p.qty+'</span>':'<span class="tag t-no">Diblokir</span>')+'</td></tr>'});
+ document.getElementById('partsTbl').innerHTML=h+'</tbody></table>';
+}
+function setPart(m,k,v){if(!PARTS[m])PARTS[m]={status:'READY',qty:0};PARTS[m][k]=v;renderParts()}
+function setAllParts(s){allModels().forEach(m=>{if(!PARTS[m])PARTS[m]={status:'READY',qty:0};PARTS[m].status=s});renderParts()}
+
+/* ============ ALLOCATION ============ */
+function runAlloc(){
+ if(!PLAN.length){alert('Muat data planning dulu di Tab 1.');return}
+ if(!LINES.length){alert('Konfigurasi line dulu di Tab 3 (atau upload Excel di Tab 2).');return}
+
+ const guard=document.getElementById('chkGuard').checked;
+ const bufLim=+document.getElementById('bufLimit').value;
+ const dedup=document.getElementById('chkDedup').checked;
+ const topup=document.getElementById('chkTopup').checked;
+ const blockAdv=guard&&BUF.length>=bufLim;
+
+ const rank={'RECOVERY':0,'ON PLAN':1,'ADVANCE':2};
+ const pool=PLAN.slice().sort((a,b)=>{
+  const ra=rank[a._cat]??3,rb=rank[b._cat]??3;
+  if(ra!==rb)return ra-rb;
+  return (a._dt?a._dt.getTime():0)-(b._dt?b._dt.getTime():0)});
+
+ const L=LINES.map(l=>({...l,cap:capOf(l),used:0,items:[]}));
+ const pdiL=L.filter(l=>l.stage==='pdi'),pioL=L.filter(l=>l.stage==='pio');
+ const capPdi=pdiL.reduce((a,l)=>a+l.cap,0);
+ const pu={},un=[];let pdiUsed=0,skipped=0;
+
+ function tryPlace(u,pass2){
+  if(dedup&&u._rstat!=='NEW'&&!pass2){skipped++;un.push({...u,_why:'Sudah di-plan '+(u._reg?u._reg.planDate+' ('+u._reg.line+')':'')+' — dilewati agar tidak dobel'});return false}
+  const p=PARTS[u._model]||{status:'READY',qty:0};
+  if(p.status==='SHORT'){un.push({...u,_why:'Parts SHORT — model '+u._model});return false}
+  if(p.status==='PARTIAL'){pu[u._model]=pu[u._model]||0;
+   if(pu[u._model]>=p.qty){un.push({...u,_why:'Parts PARTIAL habis — kuota '+p.qty+' set'});return false}}
+  if(u._hold){un.push({...u,_why:'Unit HOLD ('+u._hold+')'});return false}
+  if(u._cat==='ADVANCE'&&blockAdv&&!pass2){un.push({...u,_why:'ADVANCE diblokir — buffer PIO '+BUF.length+' ≥ ambang '+bufLim});return false}
+  if(pdiUsed>=capPdi){un.push({...u,_why:'Kapasitas PDI penuh ('+capPdi+' unit)'});return false}
+  const fit=pioL.filter(l=>(l.models.length===0||l.models.includes(u._model))&&l.used<l.cap);
+  if(!fit.length){
+   const any=pioL.some(l=>l.models.length===0||l.models.includes(u._model));
+   un.push({...u,_why:any?'Kapasitas line PIO penuh':'Tidak ada line PIO untuk model '+u._model});return false}
+  fit.sort((a,b)=>(b.cap-b.used)-(a.cap-a.used));
+  const t=fit[0];t.used++;t.items.push(u);pdiUsed++;
+  if(p.status==='PARTIAL')pu[u._model]++;
+  return true}
+
+ pool.forEach(u=>tryPlace(u,false));
+
+ // ---- TOP-UP: isi sisa slot dengan ADVANCE yang tadi diblokir ----
+ let topped=0;
+ if(topup){
+  const cand=un.filter(x=>/ADVANCE diblokir/.test(x._why));
+  cand.sort((a,b)=>(a._dt?a._dt.getTime():0)-(b._dt?b._dt.getTime():0));
+  cand.forEach(c=>{
+   const free=pioL.some(l=>(l.models.length===0||l.models.includes(c._model))&&l.used<l.cap);
+   if(!free||pdiUsed>=capPdi)return;
+   const i=un.indexOf(c);if(i>=0)un.splice(i,1);
+   const ok=tryPlace(c,true); if(ok){topped++} });
+ }
+
+ const alloc=pioL.reduce((a,l)=>a+l.used,0);
+ const capPio=pioL.reduce((a,l)=>a+l.cap,0);
+ RESULT={L,pdiL,pioL,un,blockAdv,bufLim,capPdi,capPio,pdiUsed,alloc,skipped,topped,bottleneck:Math.min(capPdi,capPio)};
+ renderResult();
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+ document.querySelector('[data-p="p5"]').classList.add('on');
+ document.getElementById('p5').classList.add('on');
+}
+
+function renderResult(){
+ const R=RESULT,{pioL,un}=R;
+ const cnt=c=>pioL.reduce((a,l)=>a+l.items.filter(i=>i._cat===c).length,0);
+ const rec=cnt('RECOVERY'),onp=cnt('ON PLAN'),adv=cnt('ADVANCE');
+ const free=R.bottleneck-R.alloc;
+ renderFlow();
+
+ document.getElementById('kpis').innerHTML=
+  k('b',R.alloc,'Total Dialokasi')+k('p',R.capPdi,'Kapasitas PDI')+k('g',R.capPio,'Kapasitas PIO')
+  +k(free>0?'a':'g',free>0?free:0,'Sisa Slot')
+  +k('r',rec,'Recovery')+k('g',onp,'On Plan')+k('b',adv,'Advance')
+  +k('a',un.length,'Tidak Teralokasi');
+
+ let a='';
+ // --- SISA SLOT / unit belum sampai ---
+ if(free>0){
+  a+='<div class="alert al-w"><b>🚢 Sisa slot '+free+' unit — kapasitas belum terpakai penuh</b>'
+   +'Terpakai <b>'+R.alloc+'</b> dari bottleneck <b>'+R.bottleneck+'</b> unit. Ini normal kalau <b>unit masih dalam pengiriman dari port</b>. '
+   +'Begitu ada update unit masuk dari kapal, paste ulang data di Tab 1 lalu <b>Jalankan Alokasi</b> — frame yang sudah di-lock tidak akan dobel, jadi hasilnya murni tambahan.</div>'}
+ if(R.topped)a+='<div class="alert al-i"><b>⬆️ Auto top-up: '+R.topped+' unit ADVANCE ditarik maju</b>Slot kosong diisi unit advance dengan dtplod terdekat supaya line tidak idle.</div>';
+ if(R.skipped)a+='<div class="alert al-p"><b>🔒 '+R.skipped+' unit dilewati — sudah pernah di-plan</b>Frame ini sudah tercatat di Plan Register, jadi tidak dimasukkan lagi ke worksheet. Cek Tab 7 untuk riwayatnya.</div>';
+ if(BUF.length){
+  if(R.blockAdv)a+='<div class="alert al-d"><b>🚨 Buffer PIO tinggi — habiskan dulu!</b>Buffer <b>'+BUF.length+' unit</b> (ambang '+R.bufLim+'). Alokasi ADVANCE diblokir otomatis. Dorong buffer masuk line PIO dulu sebelum menambah output PDI.</div>';
+  else a+='<div class="alert al-w"><b>📦 Buffer PIO: '+BUF.length+' unit</b>Masih di bawah ambang '+R.bufLim+'. Tetap prioritaskan konsumsi buffer. Terlama: <b>'+(BUF[0]?BUF[0]._wait+' hari ('+BUF[0].framenumber+')':'—')+'</b></div>'}
+ if(rec)a+='<div class="alert al-d"><b>🔴 '+rec+' unit RECOVERY</b>Sudah lewat jadwal dtplod — sudah ditempatkan di urutan teratas tiap line.</div>';
+ if(R.capPdi<R.capPio)a+='<div class="alert al-i"><b>⚙️ Bottleneck di stage PDI</b>Kapasitas PDI ('+R.capPdi+') lebih kecil dari PIO ('+R.capPio+'). Line PIO berpotensi idle '+(R.capPio-R.capPdi)+' slot. Pertimbangkan tambah line PDI atau naikkan Code.</div>';
+ else if(R.capPio<R.capPdi)a+='<div class="alert al-w"><b>⚙️ Bottleneck di stage PIO</b>Kapasitas PDI ('+R.capPdi+') lebih besar dari PIO ('+R.capPio+'). Selisih '+(R.capPdi-R.capPio)+' unit akan menumpuk jadi buffer baru.</div>';
+ if(!un.length&&R.alloc>0)a+='<div class="alert al-s"><b>✅ Semua unit teralokasi</b>Tidak ada yang tertinggal.</div>';
+ document.getElementById('alerts').innerHTML=a;
+
+ let h='';
+ R.pdiL.forEach(l=>{h+=lbox(l,true)});
+ pioL.forEach(l=>{h+=lbox(l,false)});
+ document.getElementById('lineOut').innerHTML=h;
+
+ if(!un.length)document.getElementById('unalloc').innerHTML='<div class="hint" style="padding:14px">✅ Semua unit teralokasi.</div>';
+ else{let u='<table><thead><tr><th>Frame</th><th>Model</th><th>DTPLOD</th><th>Kat</th><th>Aging</th><th>Alasan</th></tr></thead><tbody>';
+  un.forEach(r=>{u+='<tr><td class="mono">'+esc(r.framenumber)+'</td><td><b>'+esc(r._model)+'</b></td><td>'+fmtD(r._dt)+'</td><td>'+cTag(r._cat)+'</td><td>'+aCell(r._aging)+'</td><td style="color:var(--amb)">'+esc(r._why)+'</td></tr>'});
+  document.getElementById('unalloc').innerHTML=u+'</tbody></table>'}
+}
+function lbox(l,isPdi){
+ const pct=l.cap?Math.round(l.used/l.cap*100):0;
+ const cls=pct>=100?'full':(pct<60?'low':'');
+ let h='<div class="lbox'+(isPdi?' pdi':'')+'"><div class="lhead"><div class="row" style="justify-content:space-between">'
+  +'<span class="nm">'+(isPdi?'🔧 ':'')+esc(l.name)+'</span><span class="badge">'+(isPdi?'stage PDI':l.used+' / '+l.cap)+'</span></div>'
+  +'<div class="cap">Takt '+l.tt+' mnt · Code '+l.code+' ('+(CODEMIN[l.code]||430)+' mnt) · Kapasitas '+l.cap+(l.models.length?' · '+l.models.join(', '):' · semua model')+'</div>';
+ if(!isPdi)h+='<div class="bar"><i class="'+cls+'" style="width:'+Math.min(pct,100)+'%"></i></div>';
+ h+='</div><div class="lbody">';
+ if(isPdi){h+='<div class="hint" style="padding:12px">Line PDI stage 1 — kapasitas <b>'+l.cap+' unit</b>. Unit diproses di sini sebelum masuk line PIO.</div>'}
+ else if(!l.items.length)h+='<div class="hint" style="padding:12px">Tidak ada unit dialokasikan.</div>';
+ else{h+='<table><thead><tr><th>#</th><th>Frame</th><th>Model</th><th>Warna</th><th>DTPLOD</th><th>Kat</th><th>Parkir</th></tr></thead><tbody>';
+  l.items.forEach((u,i)=>{h+='<tr><td>'+(i+1)+'</td><td class="mono">'+esc(u.framenumber)+'</td><td><b>'+esc(u._model)+'</b></td><td>'+esc(u.colorname||'-')+'</td><td>'+fmtD(u._dt)+'</td><td>'+cTag(u._cat)+'</td><td>'+esc(u.parkinglocation||'-')+'</td></tr>'});
+  h+='</tbody></table>'}
+ return h+'</div></div>'}
+function k(c,n,l){return '<div class="kpi '+c+'"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'}
+
+/* ============ BUFFER ============ */
+function renderBuf(){
+ if(!BUF.length){document.getElementById('bufTbl').innerHTML='<div class="hint" style="padding:14px">Belum ada data buffer.</div>';return}
+ const d3=BUF.filter(r=>r._wait>=3).length,d1=BUF.filter(r=>r._wait<=1).length;
+ const avg=(BUF.reduce((a,r)=>a+r._wait,0)/BUF.length).toFixed(1);
+ document.getElementById('bufKpi').innerHTML=k('a',BUF.length,'Total Buffer')+k('r',d3,'Antre ≥ 3 Hari')+k('g',d1,'Antre ≤ 1 Hari')+k('b',avg,'Rata-rata Hari');
+ let al='<div class="alert al-w"><b>📌 Rekomendasi: habiskan buffer dulu</b>Selama buffer menumpuk, jangan tarik ADVANCE ke PDI — hanya akan memperpanjang antrean dan memecah FIFO.</div>';
+ if(d3)al+='<div class="alert al-d"><b>🚨 '+d3+' unit antre ≥ 3 hari</b>Indikasi kapasitas line PIO tidak mengejar output PDI. Perlu eskalasi ke leader.</div>';
+ document.getElementById('bufAlert').innerHTML=al;
+ let h='<table><thead><tr><th>Prio</th><th>Frame</th><th>Model</th><th>PDI Date</th><th>Hari Antre</th><th>Origin</th><th>Parkir</th></tr></thead><tbody>';
+ BUF.forEach((r,i)=>{const c=r._wait>=3?'var(--red)':r._wait>=2?'var(--amb)':'var(--grn)';
+  h+='<tr><td><b>'+(i+1)+'</b></td><td class="mono">'+esc(r.framenumber)+'</td><td><b>'+esc(r._model)+'</b></td><td>'+fmtD(r._pdi)+'</td><td><b style="color:'+c+'">'+r._wait+' hari</b></td><td>'+esc(r.origin_country||'-')+'</td><td>'+esc(r.parkinglocation||'-')+'</td></tr>'});
+ document.getElementById('bufTbl').innerHTML=h+'</tbody></table>';
+}
+
+/* ============ PLAN REGISTER ============ */
+function saveReg(){localStorage.setItem(RK,JSON.stringify(REG));renderReg()}
+function lockPlan(){
+ if(!RESULT){alert('Jalankan alokasi dulu.');return}
+ const ts=new Date().toLocaleString('id-ID');
+ let n=0;
+ RESULT.pioL.forEach(l=>l.items.forEach((u,i)=>{
+  REG.frames[u.framenumber]={planDate:TKEY,line:l.name,seq:i+1,model:u._model,cat:u._cat,ts};n++}));
+ REG.history.unshift({planDate:TKEY,ts,count:n,
+  lines:RESULT.pioL.map(l=>l.name+':'+l.used).join(', '),
+  rec:RESULT.pioL.reduce((a,l)=>a+l.items.filter(i=>i._cat==='RECOVERY').length,0)});
+ if(REG.history.length>60)REG.history=REG.history.slice(0,60);
+ saveReg();
+ PLAN.forEach(r=>{const g=REG.frames[r.framenumber];r._reg=g||null;r._rstat=!g?'NEW':(g.planDate===TKEY?'PLANNED':'CARRY')});
+ prevPlan();
+ alert('✅ Plan tersimpan: '+n+' unit terkunci untuk '+TKEY+'.\n\nAlokasi berikutnya tidak akan mengambil frame ini lagi.');
+}
+function renderReg(){
+ const fr=Object.keys(REG.frames),today=fr.filter(f=>REG.frames[f].planDate===TKEY).length;
+ document.getElementById('regKpi').innerHTML=k('p',fr.length,'Total Frame Terdaftar')+k('b',today,'Terkunci Hari Target')+k('g',REG.history.length,'Riwayat Plan');
+ if(!REG.history.length){document.getElementById('regTbl').innerHTML='<div class="hint" style="padding:14px">Belum ada riwayat. Klik <b>Lock Plan</b> di Tab 5 setelah alokasi.</div>';return}
+ let h='<table><thead><tr><th>Plan Date</th><th>Waktu Simpan</th><th>Jml Unit</th><th>Recovery</th><th>Distribusi Line</th></tr></thead><tbody>';
+ REG.history.forEach(x=>{h+='<tr><td><b>'+esc(x.planDate)+'</b></td><td>'+esc(x.ts)+'</td><td><b style="color:var(--acc2)">'+x.count+'</b></td><td>'+(x.rec||0)+'</td><td class="mono">'+esc(x.lines)+'</td></tr>'});
+ document.getElementById('regTbl').innerHTML=h+'</tbody></table>';
+}
+function expReg(){const b=new Blob([JSON.stringify(REG,null,1)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);
+ a.download='PDI_Plan_Register_'+TKEY.replace(/-/g,'')+'.json';a.click()}
+document.getElementById('fr').onchange=e=>{const f=e.target.files[0];if(!f)return;
+ const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);
+  if(!d.frames)throw new Error('format salah');
+  Object.assign(REG.frames,d.frames);
+  REG.history=[...(d.history||[]),...REG.history].slice(0,60);
+  saveReg();alert('✅ Register diimport: '+Object.keys(d.frames).length+' frame.');
+ }catch(x){alert('❌ Gagal import: '+x.message)}};r.readAsText(f)};
+function clearReg(){if(!confirm('Hapus SEMUA register? Frame yang sudah di-plan akan dianggap NEW lagi.'))return;
+ REG={frames:{},history:[]};saveReg();alert('Register dikosongkan.')}
+
+/* ============ EXPORT ============ */
+function exportAlloc(){
+ if(!RESULT){alert('Jalankan alokasi dulu.');return}
+ let c='Line,Urutan,FrameNumber,Model,Type,Warna,DTPLOD,Kategori,Aging,Origin,ParkingLocation\n';
+ RESULT.pioL.forEach(l=>l.items.forEach((u,i)=>{
+  c+=[l.name,i+1,u.framenumber,u._model,u.typename||'',u.colorname||'',fmtD(u._dt),u._cat,u._aging,u.origin_country||'',u.parkinglocation||'']
+   .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')+'\n'}));
+ c+='\nTIDAK TERALOKASI\nFrameNumber,Model,DTPLOD,Kategori,Alasan\n';
+ RESULT.un.forEach(u=>{c+=[u.framenumber,u._model,fmtD(u._dt),u._cat,u._why].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')+'\n'});
+ const b=new Blob(['\ufeff'+c],{type:'text/csv;charset=utf-8'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);
+ a.download='PDI_Alokasi_'+TKEY.replace(/-/g,'')+'.csv';a.click()}
+function printWS(){
+ if(!RESULT){alert('Jalankan alokasi dulu.');return}
+ let h='<html><head><meta charset="utf-8"><title>Worksheet PDI '+TKEY+'</title><style>body{font-family:Arial;font-size:11px;padding:14px}h2{margin:0 0 3px}h3{background:#123;color:#fff;padding:6px;margin:14px 0 6px}table{width:100%;border-collapse:collapse;margin-bottom:9px}th,td{border:1px solid #999;padding:4px 6px;text-align:left}th{background:#e8e8e8}.r{background:#ffe6e6}.c{width:26px}</style></head><body>';
+ h+='<h2>WORKSHEET PDI — NVDC CIBITUNG</h2><div>Target: <b>'+TKEY+'</b> | Cetak: '+fmtD(new Date())+' | Kap PDI: <b>'+RESULT.capPdi+'</b> | Kap PIO: <b>'+RESULT.capPio+'</b> | Buffer: <b>'+BUF.length+'</b></div>';
+ RESULT.pioL.forEach(l=>{
+  h+='<h3>'+l.name+' — '+l.used+'/'+l.cap+' unit (takt '+l.tt+' mnt, code '+l.code+')</h3><table><tr><th class="c">✓</th><th>#</th><th>Frame Number</th><th>Model</th><th>Type</th><th>Warna</th><th>DTPLOD</th><th>Kat</th><th>Parkir</th><th>Ket</th></tr>';
+  l.items.forEach((u,i)=>{h+='<tr'+(u._cat==='RECOVERY'?' class="r"':'')+'><td></td><td>'+(i+1)+'</td><td>'+esc(u.framenumber)+'</td><td>'+esc(u._model)+'</td><td>'+esc(u.typename||'')+'</td><td>'+esc(u.colorname||'')+'</td><td>'+fmtD(u._dt)+'</td><td>'+esc(u._cat)+'</td><td>'+esc(u.parkinglocation||'')+'</td><td></td></tr>'});
+  h+='</table>'});
+ h+='</body></html>';
+ const w=window.open('','_blank');w.document.write(h);w.document.close();w.print()}
+
+/* ============ INIT ============ */
+resetLines();renderCode();renderReg();renderFlow();
+</script>
+</body>
+</html>
